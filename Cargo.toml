@@ -1,0 +1,13 @@
+[workspace]
+
+members = [
+    "signers",
+    "providers",
+    "transactions",
+    "near-api-rs"
+]
+
+exclude = ["examples/"]
+
+[workspace.package]
+version = "0.0.1"
