@@ -3,6 +3,10 @@ use near_jsonrpc_primitives::types::status::RpcStatusError;
 use near_jsonrpc_client::{methods, JsonRpcClient};
 use async_trait::async_trait;
 use near_jsonrpc_client::errors::JsonRpcError;
+use near_primitives::views::FinalExecutionOutcomeView;
+use near_primitives::transaction::SignedTransaction;
+use near_jsonrpc_primitives::types::transactions::RpcTransactionError;
+
 
 use crate::Provider;
 
@@ -25,6 +29,14 @@ impl Provider for JsonRpcProvider {
         let request = methods::status::RpcStatusRequest; // No params needed
         let server_status: RpcStatusResponse = self.client.call(request).await?;
         Ok(server_status)
+    }
+
+    async fn send_transaction(&self, signed_transaction: SignedTransaction) -> Result<FinalExecutionOutcomeView, JsonRpcError<RpcTransactionError>>{
+        let request = methods::broadcast_tx_commit::RpcBroadcastTxCommitRequest {
+            signed_transaction: signed_transaction,
+        };
+        let response = self.client.call(request).await?;
+        Ok(response)
     }
 }
 
