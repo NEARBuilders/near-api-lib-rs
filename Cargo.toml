@@ -4,7 +4,9 @@ members = [
     "signers",
     "providers",
     "transactions",
-    "near-api-rs"
+    "near-api-rs",
+    "keystores",
+    "accounts"
 ]
 
 exclude = ["examples/"]
