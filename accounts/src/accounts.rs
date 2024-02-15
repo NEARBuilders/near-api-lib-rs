@@ -1,13 +1,12 @@
-use transaction::TransactionBuilder;
+use transactions::TransactionBuilder;
 use near_crypto::{Signer, PublicKey};
-use near_primitives::types::{AccountId, Balance, BlockReference};
-use near_primitives::views::FinalExecutionOutcome;
+use near_primitives::types::{AccountId, Balance, BlockReference, Finality};
+use near_primitives::views::FinalExecutionOutcomeView;
 
 
 //items from traits can only be used if the trait is in scope
 // can we change it somehow with better crate design?
 use providers::Provider;
-use providers::JsonRpcProvider;
 
 use std::sync::Arc;
 
@@ -23,7 +22,7 @@ impl Account {
         Self { account_id, signer, provider }
     }
 
-    pub async fn create_account(&self, new_account_id: AccountId, public_key: PublicKey, amount: Balance) -> Result<FinalExecutionOutcome, Box<dyn std::error::Error>> {
+    pub async fn create_account(&self, new_account_id: AccountId, public_key: PublicKey, amount: Balance) -> Result<FinalExecutionOutcomeView, Box<dyn std::error::Error>> {
         //Look into the whole access key thingy. We need it anyway but it also helps with nonce.
         // Fetch the current nonce for the signer account and latest block hash
         let nonce = self.provider.fetch_nonce(&self.account_id).await?;

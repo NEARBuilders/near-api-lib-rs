@@ -20,3 +20,6 @@ neardev
 
 # Python
 __pycache__
+
+# VSCODE config
+.vscode
