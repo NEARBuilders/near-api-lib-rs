@@ -1,6 +1,6 @@
 use transaction::TransactionBuilder;
 use near_crypto::{Signer, PublicKey};
-use near_primitives::types::{AccountId, Balance};
+use near_primitives::types::{AccountId, Balance, BlockReference};
 use near_primitives::views::FinalExecutionOutcome;
 
 
@@ -29,7 +29,8 @@ impl Account {
         let nonce = self.provider.fetch_nonce(&self.account_id).await?;
         
         //Implement provider.block for this.
-        let block_hash = self.provider.fetch_latest_block_hash().await?;
+        let block_reference = BlockReference::Finality(Finality::Final);
+        let block_hash = self.provider.block(block_reference).await?;
 
         // Use TransactionBuilder to construct the transaction
         let signed_tx = TransactionBuilder::new(
