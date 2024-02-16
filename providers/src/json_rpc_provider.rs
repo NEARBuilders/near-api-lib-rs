@@ -9,7 +9,7 @@ use near_jsonrpc_primitives::types::transactions::RpcTransactionError;
 use near_primitives::hash::CryptoHash;
 use near_jsonrpc_primitives::types::transactions::TransactionInfo;
 use near_jsonrpc_primitives::types::chunks::{RpcChunkError,  ChunkReference};
-use near_primitives::types::{BlockReference, EpochReference};
+use near_primitives::types::{BlockReference, EpochReference, Finality};
 use near_jsonrpc_primitives::types::blocks::RpcBlockError;
 use near_jsonrpc_primitives::types::validator::RpcValidatorError;
 
@@ -100,6 +100,23 @@ async fn test_status() {
             // For example, checking if the chain_id matches testnet
             //println!("Received response: {:?}", response);
             assert!(response.chain_id.contains("testnet"), "Chain ID should contain 'testnet'");
+        }
+        Err(e) => panic!("Status request failed with {:?}", e),
+    }
+}
+
+#[cfg(test)]
+#[tokio::test]
+async fn test_block() {
+    let provider = JsonRpcProvider::new("https://rpc.testnet.near.org");
+    let block_reference = BlockReference::Finality(Finality::Final);
+    //let block_hash = provider.block(block_reference).await?;
+    match provider.block(block_reference).await {
+        Ok(response) => {
+            // Perform checks on the response
+            // For example, checking if the chain_id matches testnet
+            println!("Received response: {:?}", response);
+            //assert!(response.chain_id.contains("testnet"), "Chain ID should contain 'testnet'");
         }
         Err(e) => panic!("Status request failed with {:?}", e),
     }

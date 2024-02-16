@@ -12,7 +12,7 @@ use near_jsonrpc_primitives::types::transactions::TransactionInfo;
 use near_jsonrpc_primitives::types::chunks::{RpcChunkError,  ChunkReference};
 use near_jsonrpc_primitives::types::blocks::RpcBlockError;
 use near_jsonrpc_primitives::types::validator::RpcValidatorError;
-
+use near_jsonrpc_primitives::types::query::{RpcQueryError, RpcQueryRequest, RpcQueryResponse, QueryResponseKind};
 
 // To-do
 // Implement a Conversion From JsonRpcError<RpcStatusError> to RpcStatusError: If you need to keep the RpcStatusError as your function's error type for consistency or other reasons, you can implement a conversion using the From trait or manually handle the conversion in each call.
@@ -43,4 +43,7 @@ pub trait Provider {
     async fn chunk(&self, chunk_reference: ChunkReference) -> Result<ChunkView, JsonRpcError<RpcChunkError>>;
     async fn block(&self, block_reference: BlockReference) -> Result<BlockView, JsonRpcError<RpcBlockError>>;
     async fn validators(&self, epoch_reference: EpochReference) -> Result<EpochValidatorInfo, JsonRpcError<RpcValidatorError>>;
+    async fn query<T: QueryResponseKind>(&self, params: RpcQueryRequest) -> Result<T, JsonRpcError<RpcQueryError>>;
+    //chat gpt version
+    //async fn query<T: QueryResponseKind>(&self, params: RpcQueryRequest) -> Result<T, Box<dyn std::error::Error>>;
 }
