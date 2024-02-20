@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use near_jsonrpc_client::methods::status::RpcStatusResponse;
 use near_jsonrpc_primitives::types::status::RpcStatusError;
-use near_primitives::views::{FinalExecutionOutcomeView, ChunkView, BlockView, EpochValidatorInfo};
+use near_primitives::views::{FinalExecutionOutcomeView, ChunkView, BlockView, EpochValidatorInfo, QueryRequest};
 use near_primitives::transaction::SignedTransaction;
 use near_jsonrpc_primitives::types::transactions::RpcTransactionError;
 use near_jsonrpc_client::errors::JsonRpcError;
@@ -43,7 +43,5 @@ pub trait Provider {
     async fn chunk(&self, chunk_reference: ChunkReference) -> Result<ChunkView, JsonRpcError<RpcChunkError>>;
     async fn block(&self, block_reference: BlockReference) -> Result<BlockView, JsonRpcError<RpcBlockError>>;
     async fn validators(&self, epoch_reference: EpochReference) -> Result<EpochValidatorInfo, JsonRpcError<RpcValidatorError>>;
-    async fn query<T: QueryResponseKind>(&self, params: RpcQueryRequest) -> Result<T, JsonRpcError<RpcQueryError>>;
-    //chat gpt version
-    //async fn query<T: QueryResponseKind>(&self, params: RpcQueryRequest) -> Result<T, Box<dyn std::error::Error>>;
+    async fn query(&self, request: QueryRequest) -> Result<RpcQueryResponse, JsonRpcError<RpcQueryError>>;
 }

@@ -3,7 +3,7 @@ use near_jsonrpc_primitives::types::status::RpcStatusError;
 use near_jsonrpc_client::{methods, JsonRpcClient};
 use async_trait::async_trait;
 use near_jsonrpc_client::errors::JsonRpcError;
-use near_primitives::views::{FinalExecutionOutcomeView, ChunkView, BlockView, EpochValidatorInfo};
+use near_primitives::views::{FinalExecutionOutcomeView, ChunkView, BlockView, EpochValidatorInfo, QueryRequest};
 use near_primitives::transaction::SignedTransaction;
 use near_jsonrpc_primitives::types::transactions::RpcTransactionError;
 use near_primitives::hash::CryptoHash;
@@ -12,6 +12,8 @@ use near_jsonrpc_primitives::types::chunks::{RpcChunkError,  ChunkReference};
 use near_primitives::types::{BlockReference, EpochReference, Finality};
 use near_jsonrpc_primitives::types::blocks::RpcBlockError;
 use near_jsonrpc_primitives::types::validator::RpcValidatorError;
+use near_jsonrpc_primitives::types::query::{RpcQueryError, RpcQueryRequest, RpcQueryResponse, QueryResponseKind};
+//use near_primitives::views::QueryRequest
 
 
 use crate::Provider;
@@ -37,10 +39,24 @@ impl Provider for JsonRpcProvider {
         Ok(server_status)
     }
 
+    async fn query(&self, request: QueryRequest) -> Result<RpcQueryResponse, JsonRpcError<RpcQueryError>> {
+        let query_request = RpcQueryRequest {
+            block_reference: BlockReference::Finality(Finality::Final),
+            request,
+        };  
+        let response: RpcQueryResponse = self.client.call(query_request).await?;
+        // Deserialize the JSON string into `RpcQueryResponse`
+        // let response: RpcQueryResponse = serde_json::from_str(&response_body)
+        //     .map_err(|err| JsonRpcError::DeserializationError(err.to_string()))?;
+        Ok(response)
+    }
+
     async fn send_transaction(&self, signed_transaction: SignedTransaction) -> Result<FinalExecutionOutcomeView, JsonRpcError<RpcTransactionError>>{
         let request = methods::broadcast_tx_commit::RpcBroadcastTxCommitRequest {
             signed_transaction,
         };
+        //should we typecast the response here or not, 
+        //do we recieve json string or specific response type on the basis of requestType
         let response = self.client.call(request).await?;
         Ok(response)
     }
@@ -93,12 +109,12 @@ impl Provider for JsonRpcProvider {
 #[cfg(test)]
 #[tokio::test]
 async fn test_status() {
-    let provider = JsonRpcProvider::new("https://rpc.testnet.near.org");
+    let provider = JsonRpcProvider::new("https://144.76.3.47:3000");//("https://rpc.testnet.near.org");
     match provider.status().await {
         Ok(response) => {
             // Perform checks on the response
             // For example, checking if the chain_id matches testnet
-            //println!("Received response: {:?}", response);
+            println!("Received response: {:?}", response);
             assert!(response.chain_id.contains("testnet"), "Chain ID should contain 'testnet'");
         }
         Err(e) => panic!("Status request failed with {:?}", e),
@@ -115,9 +131,74 @@ async fn test_block() {
         Ok(response) => {
             // Perform checks on the response
             // For example, checking if the chain_id matches testnet
-            println!("Received response: {:?}", response);
+            //println!("Received response: {:?}", response);
             //assert!(response.chain_id.contains("testnet"), "Chain ID should contain 'testnet'");
         }
         Err(e) => panic!("Status request failed with {:?}", e),
     }
 }
+
+
+//RpcQueryRequest
+
+// pub struct RpcQueryRequest {
+//     #[serde(flatten)]
+//     pub block_reference: near_primitives::types::BlockReference,
+//     #[serde(flatten)]
+//     pub request: near_primitives::views::QueryRequest,
+// }
+
+//QueryRequest
+
+// #[derive(serde::Serialize, serde::Deserialize, Debug, PartialEq, Eq, Clone)]
+// #[serde(tag = "request_type", rename_all = "snake_case")]
+// pub enum QueryRequest {
+//     ViewAccount {
+//         account_id: AccountId,
+//     },
+//     ViewCode {
+//         account_id: AccountId,
+//     },
+//     ViewState {
+//         account_id: AccountId,
+//         #[serde(rename = "prefix_base64")]
+//         prefix: StoreKey,
+//         #[serde(default, skip_serializing_if = "is_false")]
+//         include_proof: bool,
+//     },
+//     ViewAccessKey {
+//         account_id: AccountId,
+//         public_key: PublicKey,
+//     },
+//     ViewAccessKeyList {
+//         account_id: AccountId,
+//     },
+//     CallFunction {
+//         account_id: AccountId,
+//         method_name: String,
+//         #[serde(rename = "args_base64")]
+//         args: FunctionArgs,
+//     },
+// }
+
+
+// RPC Query Response
+// #[derive(serde::Serialize, serde::Deserialize, Debug)]
+// pub struct RpcQueryResponse {
+//     #[serde(flatten)]
+//     pub kind: QueryResponseKind,
+//     pub block_height: near_primitives::types::BlockHeight,
+//     pub block_hash: near_primitives::hash::CryptoHash,
+// }
+
+// Query Response Kind
+// #[derive(serde::Serialize, serde::Deserialize, Debug)]
+// #[serde(untagged)]
+// pub enum QueryResponseKind {
+//     ViewAccount(near_primitives::views::AccountView),
+//     ViewCode(near_primitives::views::ContractCodeView),
+//     ViewState(near_primitives::views::ViewStateResult),
+//     CallResult(near_primitives::views::CallResult),
+//     AccessKey(near_primitives::views::AccessKeyView),
+//     AccessKeyList(near_primitives::views::AccessKeyList),
+// }

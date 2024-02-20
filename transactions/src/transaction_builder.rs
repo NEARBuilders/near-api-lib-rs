@@ -24,8 +24,8 @@ impl TransactionBuilder {
             transaction: Transaction {
                 signer_id,
                 public_key,
-                nonce,
                 receiver_id,
+                nonce,
                 block_hash,
                 actions: Vec::new(), // Initialize the actions vector here
             },
