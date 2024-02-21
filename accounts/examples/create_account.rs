@@ -31,5 +31,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("response: {:#?}", result);
 
+    println!("=============================================================");
+    println!("New Account ID: {}", new_account_id);
+    println!("    Secret Key: {}", new_key_pair);
+    println!("    Public Key: {}", new_key_pair.public_key());
+    println!("       Deposit: {}", amount);
+    println!("-------------------------------------------------------------");
+
     Ok(())
 }

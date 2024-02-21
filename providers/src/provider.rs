@@ -14,7 +14,7 @@ use near_jsonrpc_primitives::types::blocks::RpcBlockError;
 use near_jsonrpc_primitives::types::validator::RpcValidatorError;
 use near_jsonrpc_primitives::types::query::{RpcQueryError, RpcQueryRequest, RpcQueryResponse, QueryResponseKind};
 
-// To-do
+// @To-do
 // Implement a Conversion From JsonRpcError<RpcStatusError> to RpcStatusError: If you need to keep the RpcStatusError as your function's error type for consistency or other reasons, you can implement a conversion using the From trait or manually handle the conversion in each call.
 
 // Example of Manual Error Handling
