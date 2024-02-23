@@ -1,15 +1,11 @@
 use transactions::TransactionBuilder;
 use near_crypto::{Signer, PublicKey};
 use near_primitives::types::{AccountId, Balance, BlockReference, Finality};
-use near_primitives::views::FinalExecutionOutcomeView;
-
-
-//items from traits can only be used if the trait is in scope
-// can we change it somehow with better crate design?
+use near_primitives::views::{FinalExecutionOutcomeView, QueryRequest};
+use near_jsonrpc_primitives::types::query::{RpcQueryResponse, QueryResponseKind};
+use near_primitives::account::AccessKey;
 use providers::Provider;
-
 use std::sync::Arc;
-
 
 pub struct Account {
     pub account_id: AccountId,
@@ -22,40 +18,58 @@ impl Account {
         Self { account_id, signer, provider }
     }
 
+    // Function to fetch the current nonce for an account's access key
+    pub async fn fetch_nonce(&self, account_id: &AccountId, public_key: &PublicKey) -> Result<u64, Box<dyn std::error::Error>> {
+        
+        let query_request = QueryRequest::ViewAccessKey {
+            account_id: account_id.clone(),
+            public_key: public_key.clone(),
+        };
+
+        // Send the query to the NEAR blockchain
+        let response: RpcQueryResponse = self.provider.query(query_request).await?;
+
+        // Extract the access key view from the response
+        if let QueryResponseKind::AccessKey(access_key_view) = response.kind {
+            Ok(access_key_view.nonce)
+        } else {
+            Err("Unexpected response kind".into())
+        }
+    }
+
     pub async fn create_account(&self, new_account_id: AccountId, public_key: PublicKey, amount: Balance) -> Result<FinalExecutionOutcomeView, Box<dyn std::error::Error>> {
         //Look into the whole access key thingy. We need it anyway but it also helps with nonce.
         // Fetch the current nonce for the signer account and latest block hash
-        let nonce = self.provider.fetch_nonce(&self.account_id).await?;
+        let nonce = self.fetch_nonce(&self.account_id, &self.signer.public_key()).await?;
         
-        //Implement provider.block for this.
+        //Block hash
         let block_reference = BlockReference::Finality(Finality::Final);
-        let block_hash = self.provider.block(block_reference).await?;
+        let block = self.provider.block(block_reference).await?;
+        let block_hash = block.header.hash;
 
         // Use TransactionBuilder to construct the transaction
         let signed_tx = TransactionBuilder::new(
             self.account_id.clone(), 
             self.signer.public_key(), 
-            nonce, 
             new_account_id.clone(), 
+            nonce+1, 
             block_hash)
             .create_account()
             .transfer(amount)
             .add_key(public_key, AccessKey::full_access())
-            .build();
+            //.build()
             .signTransaction(&*self.signer); // Sign the transaction
 
-        // Sign the transaction
-        //let signed_tx = self.signer.sign_transaction(&transaction).await?;
-
         // Send the transaction
-        self.provider.send_transaction(&signed_tx).await
+        let transaction_result = self.provider.send_transaction(signed_tx).await?;
+        Ok(transaction_result)
     }
 
     // Implement other account methods using TransactionBuilder...
 }
 
 
-//To-do
+// TODO
 //JS reference for 
 // protected async signTransaction(receiverId: string, actions: Action[]): Promise<[Uint8Array, SignedTransaction]> {
 //     const accessKeyInfo = await this.findAccessKey(receiverId, actions);

@@ -10,4 +10,13 @@ near-crypto = "0.20.0"
 near-primitives = "0.20.0"
 providers = {path ="../providers"}
 transactions = {path ="../transactions"}
+near-jsonrpc-primitives = "0.20.0"
+near-jsonrpc-client = "0.8.0"
+tokio = { version = "1", features = ["full"] }
+serde_json = "1.0.85"
+
+[dev-dependencies]
+tokio = { version = "1", features = ["full", "test-util"] }
+env_logger = "0.10.0"
+reqwest = { version = "0.11.12", features = ["json"], default-features = false }
 

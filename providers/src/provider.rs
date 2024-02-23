@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use near_jsonrpc_client::methods::status::RpcStatusResponse;
 use near_jsonrpc_primitives::types::status::RpcStatusError;
-use near_primitives::views::{FinalExecutionOutcomeView, ChunkView, BlockView, EpochValidatorInfo};
+use near_primitives::views::{FinalExecutionOutcomeView, ChunkView, BlockView, EpochValidatorInfo, QueryRequest};
 use near_primitives::transaction::SignedTransaction;
 use near_jsonrpc_primitives::types::transactions::RpcTransactionError;
 use near_jsonrpc_client::errors::JsonRpcError;
@@ -12,9 +12,9 @@ use near_jsonrpc_primitives::types::transactions::TransactionInfo;
 use near_jsonrpc_primitives::types::chunks::{RpcChunkError,  ChunkReference};
 use near_jsonrpc_primitives::types::blocks::RpcBlockError;
 use near_jsonrpc_primitives::types::validator::RpcValidatorError;
+use near_jsonrpc_primitives::types::query::{RpcQueryError, RpcQueryRequest, RpcQueryResponse, QueryResponseKind};
 
-
-// To-do
+// @To-do
 // Implement a Conversion From JsonRpcError<RpcStatusError> to RpcStatusError: If you need to keep the RpcStatusError as your function's error type for consistency or other reasons, you can implement a conversion using the From trait or manually handle the conversion in each call.
 
 // Example of Manual Error Handling
@@ -43,4 +43,5 @@ pub trait Provider {
     async fn chunk(&self, chunk_reference: ChunkReference) -> Result<ChunkView, JsonRpcError<RpcChunkError>>;
     async fn block(&self, block_reference: BlockReference) -> Result<BlockView, JsonRpcError<RpcBlockError>>;
     async fn validators(&self, epoch_reference: EpochReference) -> Result<EpochValidatorInfo, JsonRpcError<RpcValidatorError>>;
+    async fn query(&self, request: QueryRequest) -> Result<RpcQueryResponse, JsonRpcError<RpcQueryError>>;
 }
