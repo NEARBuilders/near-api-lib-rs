@@ -3,11 +3,11 @@ use near_jsonrpc_primitives::types::query::QueryResponseKind;
 use near_primitives::transaction::{Action, FunctionCallAction, Transaction};
 use near_primitives::types::BlockReference;
 
-use providers::JsonRpcProvider;
+use near_providers::JsonRpcProvider;
 
 //items from traits can only be used if the trait is in scope
 // can we change it somehow with better crate design?
-use providers::Provider;
+use near_providers::Provider;
 
 
 use serde_json::json;

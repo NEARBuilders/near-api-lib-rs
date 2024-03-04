@@ -109,7 +109,7 @@ impl Provider for JsonRpcProvider {
 #[cfg(test)]
 #[tokio::test]
 async fn test_status() {
-    let provider = JsonRpcProvider::new("https://144.76.3.47:3000");//("https://rpc.testnet.near.org");
+    let provider = JsonRpcProvider::new("https://rpc.testnet.near.org");
     match provider.status().await {
         Ok(response) => {
             // Perform checks on the response
