@@ -1,6 +1,6 @@
 use near_crypto::InMemorySigner;
-use providers::Provider;
-use providers::JsonRpcProvider;
+use near_providers::Provider;
+use near_providers::JsonRpcProvider;
 use near_crypto::{Signer, KeyFile};
 
 use std::sync::Arc;

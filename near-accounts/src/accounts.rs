@@ -1,10 +1,10 @@
-use transactions::TransactionBuilder;
+use near_transactions::TransactionBuilder;
 use near_crypto::{Signer, PublicKey};
 use near_primitives::types::{AccountId, Balance, BlockReference, Finality};
 use near_primitives::views::{FinalExecutionOutcomeView, QueryRequest};
 use near_jsonrpc_primitives::types::query::{RpcQueryResponse, QueryResponseKind};
 use near_primitives::account::AccessKey;
-use providers::Provider;
+use near_providers::Provider;
 use std::sync::Arc;
 
 pub struct Account {

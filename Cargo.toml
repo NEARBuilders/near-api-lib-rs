@@ -1,12 +1,12 @@
 [workspace]
 
 members = [
-    "signers",
-    "providers",
-    "transactions",
-    "near-api-rs",
-    "keystores",
-    "accounts"
+    "near-signers",
+    "near-providers",
+    "near-transactions",
+    "near-api",
+    "near-keystores",
+    "near-accounts"
 ]
 
 exclude = ["examples/"]

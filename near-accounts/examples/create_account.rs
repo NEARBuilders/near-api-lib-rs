@@ -1,10 +1,10 @@
-use providers::Provider;
-use providers::JsonRpcProvider;
+//use near_providers::Provider;
+use near_providers::JsonRpcProvider;
 use std::sync::Arc;
 use near_crypto::InMemorySigner;
 use near_primitives::types::Balance;
 use near_crypto::{Signer};
-use accounts::Account;
+use near_accounts::Account;
 mod utils;
 use near_primitives::types::AccountId;
 
@@ -14,7 +14,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let signer_account_id: AccountId = utils::input("Enter the signer Account ID: ")?.parse()?;
     let signer_secret_key = utils::input("Enter the signer's private key: ")?.parse()?;
-    let new_account_id = utils::input("Enter the signer's private key: ")?.parse()?;
+    let new_account_id: AccountId = utils::input("Enter the signer's private key: ")?.parse()?;
     let signer = InMemorySigner::from_secret_key(signer_account_id.clone(), signer_secret_key);
         
     // Amount to transfer to the new account
@@ -26,7 +26,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let account = Account::new(signer_account_id, signer, provider);
     // Call create_account
-    let result = account.create_account(new_account_id, new_key_pair.public_key(), amount).await;
+    let result = account.create_account(new_account_id.clone(), new_key_pair.public_key(), amount).await;
 
 
     println!("response: {:#?}", result);

@@ -1,8 +1,10 @@
 [package]
-name = "signers"
+name = "near-transactions"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+near-primitives = "0.20.0"
+near-crypto = "0.20.0"
