@@ -8,9 +8,9 @@ use near_primitives::transaction::{
 use near_primitives::types::{AccountId, Nonce, Balance, Gas};
 use near_primitives::hash::CryptoHash;
 
-use near_primitives::account::{AccessKey, AccessKeyPermission, Account};
+use near_primitives::account::{AccessKey};
 
-use near_crypto::{EmptySigner, InMemorySigner, KeyType, PublicKey, SecretKey, Signature, Signer};
+use near_crypto::{ PublicKey, Signer};
 
 // TransactionBuilder struct
 pub struct TransactionBuilder {
@@ -32,7 +32,7 @@ impl TransactionBuilder {
         }
     }
 
-    pub fn signTransaction(self, signer: &dyn Signer) -> SignedTransaction {
+    pub fn sign_transaction(self, signer: &dyn Signer) -> SignedTransaction {
         let signature = signer.sign(self.transaction.get_hash_and_size().0.as_ref());
         SignedTransaction::new(signature, self.transaction)
     }
