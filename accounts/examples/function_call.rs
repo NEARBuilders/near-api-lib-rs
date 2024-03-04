@@ -8,6 +8,7 @@ use near_crypto::{Signer};
 use accounts::Account;
 mod utils;
 use near_primitives::types::AccountId;
+use serde_json::json;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -15,19 +16,23 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let signer_account_id: AccountId = utils::input("Enter the signer Account ID: ")?.parse()?;
     let signer_secret_key = utils::input("Enter the signer's private key: ")?.parse()?;
-    let contract_id: AccountId = utils::input("Enter the Contract ID: ")?.parse()?;
+    let contract_id: AccountId = "contract.near-api-rs.testnet".parse::<AccountId>()?;
     let signer = InMemorySigner::from_secret_key(signer_account_id.clone(), signer_secret_key);
         
     // Amount to transfer to the new account
-    let gas: Gas = 300_000_000_000_000; // Example amount in yoctoNEAR
+    let gas: Gas = 100_000_000_000_000; // Example amount in yoctoNEAR
 
-    let new_key_pair = near_crypto::SecretKey::from_random(near_crypto::KeyType::ED25519);
+    //let new_key_pair = near_crypto::SecretKey::from_random(near_crypto::KeyType::ED25519);
     let provider = Arc::new(JsonRpcProvider::new("https://rpc.testnet.near.org"));
     let signer = Arc::new(signer);
 
     let account = Account::new(signer_account_id, signer, provider);
     let method_name = "set_status".to_string();
-    let args = ["status working"];
+
+    let args_json = json!({"message": "working"});
+    // Serialize the JSON to a Vec<u8>
+    let args = serde_json::to_vec(&args_json)?;
+    //let args = vec!["status working"];
 
     // Call create_account
     let result = account.function_call(contract_id, method_name, args, gas, 0).await;
