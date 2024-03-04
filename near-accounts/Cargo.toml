@@ -1,5 +1,5 @@
 [package]
-name = "accounts"
+name = "near-accounts"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,10 +7,10 @@ edition = "2021"
 
 [dependencies]
 near-crypto = "0.20.0"
-near-primitives = "0.20.0"
-providers = {path ="../providers"}
-transactions = {path ="../transactions"}
-near-jsonrpc-primitives = "0.20.0"
+near-primitives = "0.20.1"
+near-providers = {path ="../near-providers"}
+near-transactions = {path ="../near-transactions"}
+near-jsonrpc-primitives = "0.20.1"
 near-jsonrpc-client = "0.8.0"
 tokio = { version = "1", features = ["full"] }
 serde_json = "1.0.85"

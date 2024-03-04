@@ -1,6 +1,6 @@
 [package]
-name = "providers"
-version = "0.1.0"
+name = "near-providers"
+version = "0.0.1"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -8,11 +8,11 @@ edition = "2021"
 [dependencies]
 tokio = { version = "1", features = ["full"] }
 near-jsonrpc-client = "0.8.0"
-near-primitives = "0.20.0"
-near-jsonrpc-primitives = "0.20.0"
+near-primitives = "0.20.1"
+near-jsonrpc-primitives = "0.20.1"
 async-trait = "0.1.50"
 serde_json = "1.0.85"
-near-crypto = "0.20.0"
+near-crypto = "0.20.1"
 
 
 
