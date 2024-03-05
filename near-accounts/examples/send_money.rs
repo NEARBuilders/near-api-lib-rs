@@ -1,47 +1,35 @@
+//use near_providers::Provider;
 use near_providers::JsonRpcProvider;
 use std::sync::Arc;
 use near_crypto::InMemorySigner;
+use near_primitives::types::Balance;
 use near_accounts::Account;
 mod utils;
 use near_primitives::types::AccountId;
-use std::io;
-use std::fs::File;
-use std::io::Read;
-
-// Corrected to read as binary and return Vec<u8>
-fn read_wasm_file() -> io::Result<Vec<u8>> {
-    let file_path = "accounts/examples/contract-wasm/status_message.wasm";
-    let mut file = File::open(file_path)?;
-    let mut contents = Vec::new();
-    file.read_to_end(&mut contents)?;
-    Ok(contents)
-}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
 
+    // New Account ID: contract.near-api-rs.testnet
+    // Secret Key: ed25519:2ytXTGiGkMfpdW1JujZNebTCKRFQAFqq89fbkq9akBXy8kqqfhTqUCzmDexeNrCD1sjijMATdPWKzyCj9XnteFgN
     let signer_account_id: AccountId = utils::input("Enter the signer Account ID: ")?.parse()?;
     let signer_secret_key = utils::input("Enter the signer's private key: ")?.parse()?;
+    let receiver_account_id: AccountId = utils::input("Enter the account name of receiver account ")?.parse()?;
     let signer = InMemorySigner::from_secret_key(signer_account_id.clone(), signer_secret_key);
+        
+    // Amount to transfer to the receiver account
+    let amount: Balance = 10_000_000_000_000; // Example amount in yoctoNEAR
 
     let provider = Arc::new(JsonRpcProvider::new("https://rpc.testnet.near.org"));
     let signer = Arc::new(signer);
 
     let account = Account::new(signer_account_id, signer, provider);
-
-    let wasm_code = read_wasm_file()?;
-    
-    let result = account.deploy_contract(wasm_code).await;
+    // Call create_account
+    let result = account.send_money(receiver_account_id.clone(), amount).await;
 
 
     println!("response: {:#?}", result);
 
     Ok(())
 }
-
-
-// New Account ID: contract.near-api-rs.testnet
-// Secret Key: ed25519:2ytXTGiGkMfpdW1JujZNebTCKRFQAFqq89fbkq9akBXy8kqqfhTqUCzmDexeNrCD1sjijMATdPWKzyCj9XnteFgN
-// Public Key: ed25519:4mKgZ8e9PgSJvrVtJ4omkgmPR7ssgpCPGc2N5AGWkhfQ
-// Deposit: 10000000000000000000000
