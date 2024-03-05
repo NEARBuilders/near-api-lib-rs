@@ -6,6 +6,7 @@ use near_jsonrpc_primitives::types::query::{RpcQueryResponse, QueryResponseKind}
 use near_primitives::account::AccessKey;
 use near_providers::Provider;
 use std::sync::Arc;
+use crate::access_keys::{full_access_key, function_call_access_key}; 
 
 pub struct Account {
     pub account_id: AccountId,
@@ -56,8 +57,45 @@ impl Account {
             block_hash)
             .create_account()
             .transfer(amount)
-            .add_key(public_key, AccessKey::full_access())
+            .add_key(public_key, full_access_key())
             //.build()
+            .sign_transaction(&*self.signer); // Sign the transaction
+
+        // Send the transaction
+        let transaction_result = self.provider.send_transaction(signed_tx).await?;
+        Ok(transaction_result)
+    }
+
+    pub async fn add_key(&self, public_key: PublicKey, allowance: Option<Balance>, contract_id: Option<String>, method_names: Option<Vec<String>>) -> Result<FinalExecutionOutcomeView, Box<dyn std::error::Error>> {
+        //To-do
+        //method_names can be an empty array. It will create limited access key to any methods.
+        
+        let nonce = self.fetch_nonce(&self.account_id, &self.signer.public_key()).await?;
+        
+        //Block hash
+        let block_reference = BlockReference::Finality(Finality::Final);
+        let block = self.provider.block(block_reference).await?;
+        let block_hash = block.header.hash;
+
+        let access_key: AccessKey = match contract_id {
+            Some(cid) => {
+                if let Some(m_names) = method_names {
+                    function_call_access_key(allowance, cid, m_names)
+                } else {
+                    return Err("No method_names argument provided for function call access keys. You should atleast provie an empty vector.".into());
+                }
+            },
+            None => full_access_key(),
+        };
+
+        // Use TransactionBuilder to construct the transaction
+        let signed_tx = TransactionBuilder::new(
+            self.account_id.clone(), 
+            self.signer.public_key(), 
+            self.account_id.clone(), 
+            nonce+1, 
+            block_hash)
+            .add_key(public_key, access_key)
             .sign_transaction(&*self.signer); // Sign the transaction
 
         // Send the transaction
@@ -117,22 +155,12 @@ impl Account {
 
 
     pub async fn view_function(&self, contract_id: AccountId, method_name: String, args: FunctionArgs) -> Result<near_primitives::views::CallResult, Box<dyn std::error::Error>> {
-        //Look into the whole access key thingy. We need it anyway but it also helps with nonce.
-        // Fetch the current nonce for the signer account and latest block hash
-        let nonce = self.fetch_nonce(&self.account_id, &self.signer.public_key()).await?;
         
-        //Block hash
-        let block_reference = BlockReference::Finality(Finality::Final);
-        let block = self.provider.block(block_reference).await?;
-        let block_hash = block.header.hash;
-
         let query_request = QueryRequest::CallFunction { 
             account_id: self.account_id.clone(), 
             method_name: method_name.clone(), 
             args: args.clone()
         };
-        
-
         // Send the query to the NEAR blockchain
         let response: RpcQueryResponse = self.provider.query(query_request).await?;
 
