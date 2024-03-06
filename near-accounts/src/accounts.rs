@@ -155,25 +155,6 @@ impl Account {
         }
     }
 
-    // pub async fn view_state(&self, prefix: String) -> Result<near_primitives::views::ViewStateResult, Box<dyn std::error::Error>> {
-
-    //     //let prefix = vec![prefix];
-    //     let query_request = QueryRequest::ViewState { 
-    //         account_id: self.account_id.clone(), 
-    //         prefix: near_primitives::types::StoreKey::from(prefix.into_bytes()),
-    //         include_proof: false,
-    //     };
-        
-    //     // Send the query to the NEAR blockchain
-    //     let response: RpcQueryResponse = self.provider.query(query_request).await?;
-
-    //     if let QueryResponseKind::ViewState(result) = response.kind {
-    //         Ok(result)
-    //     } else {
-    //         Err("Unexpected response kind".into())
-    //     }
-    // }
-
     pub async fn state(&self) -> Result<near_primitives::views::AccountView, Box<dyn std::error::Error>> {
 
         let query_request = QueryRequest::ViewAccount { 
@@ -194,7 +175,6 @@ impl Account {
 
 pub async fn view_state(provider: Arc<dyn Provider>, prefix: String, contract_id: AccountId) -> Result<near_primitives::views::ViewStateResult, Box<dyn std::error::Error>> {
 
-    //let prefix = vec![prefix];
     let query_request = QueryRequest::ViewState { 
         account_id: contract_id,
         prefix: near_primitives::types::StoreKey::from(prefix.into_bytes()),
