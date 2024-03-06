@@ -1,11 +1,8 @@
 use near_primitives::types::Gas;
-use providers::Provider;
-use providers::JsonRpcProvider;
+use near_providers::JsonRpcProvider;
 use std::sync::Arc;
 use near_crypto::InMemorySigner;
-use near_primitives::types::Balance;
-use near_crypto::{Signer};
-use accounts::Account;
+use near_accounts::Account;
 mod utils;
 use near_primitives::types::AccountId;
 use serde_json::json;
