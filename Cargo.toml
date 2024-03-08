@@ -1,11 +1,9 @@
 [workspace]
 
 members = [
-    "near-signers",
     "near-providers",
     "near-transactions",
     "near-api",
-    "near-keystores",
     "near-accounts"
 ]
 

@@ -1,14 +1,7 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
+pub use near_accounts::Account;
+pub use near_providers::JsonRpcProvider;
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+pub use near_accounts::accounts;
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
-}
+//mod near_accounts;
+//mod near_providers;

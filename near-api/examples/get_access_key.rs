@@ -1,7 +1,6 @@
-use near_providers::JsonRpcProvider;
+use near_api::JsonRpcProvider;
 use std::sync::Arc;
-use near_crypto::InMemorySigner;
-use near_accounts::accounts::{get_access_key};
+use near_api::accounts::{get_access_key};
 use near_primitives::types::AccountId;
 
 #[tokio::main]

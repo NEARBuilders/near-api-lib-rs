@@ -1,10 +1,8 @@
-use near_providers::JsonRpcProvider;
+use near_api::JsonRpcProvider;
 use std::sync::Arc;
 use near_crypto::InMemorySigner;
-use near_accounts::accounts::{view_state};
-mod utils;
+use near_api::accounts::{view_state};
 use near_primitives::types::AccountId;
-use serde_json::json;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

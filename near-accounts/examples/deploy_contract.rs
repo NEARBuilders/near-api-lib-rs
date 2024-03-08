@@ -8,7 +8,6 @@ use std::io;
 use std::fs::File;
 use std::io::Read;
 
-// Corrected to read as binary and return Vec<u8>
 fn read_wasm_file() -> io::Result<Vec<u8>> {
     let file_path = "accounts/examples/contract-wasm/status_message.wasm";
     let mut file = File::open(file_path)?;
@@ -33,7 +32,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let wasm_code = read_wasm_file()?;
     
     let result = account.deploy_contract(wasm_code).await;
-
 
     println!("response: {:#?}", result);
 
