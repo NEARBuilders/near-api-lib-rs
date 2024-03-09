@@ -1,12 +1,13 @@
 use near_transactions::TransactionBuilder;
 use near_crypto::{Signer, PublicKey};
-use near_primitives::types::{AccountId, Balance, BlockReference, Finality, FunctionArgs, Gas, StoreKey};
+use near_primitives::types::{AccountId, Balance, BlockReference, Finality, FunctionArgs, Gas};
 use near_primitives::views::{FinalExecutionOutcomeView, QueryRequest};
 use near_jsonrpc_primitives::types::query::{RpcQueryResponse, QueryResponseKind};
 use near_primitives::account::AccessKey;
 use near_providers::Provider;
 use std::sync::Arc;
 use crate::access_keys::{full_access_key, function_call_access_key}; 
+use serde_json::Value;
 
 pub struct Account {
     pub account_id: AccountId,
@@ -20,7 +21,6 @@ impl Account {
     }
 
     async fn get_transaction_builder(&self, receiver_id: AccountId) -> Result<TransactionBuilder, Box<dyn std::error::Error>>  {
-        //Look into the whole access key thingy. We need it anyway but it also helps with nonce.
         // Fetch the current nonce for the signer account and latest block hash
         let nonce = self.fetch_nonce(&self.account_id, &self.signer.public_key()).await?;
         
@@ -66,7 +66,6 @@ impl Account {
             .create_account()
             .transfer(amount)
             .add_key(public_key, full_access_key())
-            //.build()
             .sign_transaction(&*self.signer); // Sign the transaction
 
         // Send the transaction
@@ -75,9 +74,6 @@ impl Account {
     }
 
     pub async fn add_key(&self, public_key: PublicKey, allowance: Option<Balance>, contract_id: Option<String>, method_names: Option<Vec<String>>) -> Result<FinalExecutionOutcomeView, Box<dyn std::error::Error>> {
-        //To-do
-        //method_names can be an empty array. It will create limited access key to any methods.
-        
         let nonce = self.fetch_nonce(&self.account_id, &self.signer.public_key()).await?;
         
         //Block hash
@@ -147,7 +143,10 @@ impl Account {
         Ok(transaction_result)
     }
 
-    pub async fn function_call(&self, contract_id: AccountId, method_name: String, args: Vec<u8>, gas: Gas, deposit: Balance) -> Result<FinalExecutionOutcomeView, Box<dyn std::error::Error>> {
+    pub async fn function_call(&self, contract_id: AccountId, method_name: String, args: Value, gas: Gas, deposit: Balance) -> Result<FinalExecutionOutcomeView, Box<dyn std::error::Error>> {
+        // Serialize the JSON to a Vec<u8>
+        let args = serde_json::to_vec(&args)?;
+        
         // Use TransactionBuilder to construct the transaction
         let signed_tx = self.get_transaction_builder(contract_id).await?
             .function_call(method_name, args, gas, deposit)
@@ -176,38 +175,6 @@ impl Account {
         }
     }
 
-    pub async fn get_access_key(&self) -> Result<near_primitives::views::AccessKeyList, Box<dyn std::error::Error>> {
-
-        let query_request = QueryRequest::ViewAccessKeyList { 
-            account_id:  self.account_id.clone()
-        };
-        
-        // Send the query to the NEAR blockchain
-        let response: RpcQueryResponse = self.provider.query(query_request).await?;
-
-        if let QueryResponseKind::AccessKeyList(result) = response.kind {
-            Ok(result)
-        } else {
-            Err("Unexpected response kind".into())
-        }
-    }
-
-    pub async fn state(&self) -> Result<near_primitives::views::AccountView, Box<dyn std::error::Error>> {
-
-        let query_request = QueryRequest::ViewAccount { 
-            account_id: self.account_id.clone(), 
-        };
-        
-        // Send the query to the NEAR blockchain
-        let response: RpcQueryResponse = self.provider.query(query_request).await?;
-
-        if let QueryResponseKind::ViewAccount(result) = response.kind {
-            Ok(result)
-        } else {
-            Err("Unexpected response kind".into())
-        }
-    }
-    // Implement other account methods using TransactionBuilder...
 }
 
 pub async fn view_state(provider: Arc<dyn Provider>, prefix: String, contract_id: AccountId) -> Result<near_primitives::views::ViewStateResult, Box<dyn std::error::Error>> {
@@ -222,6 +189,38 @@ pub async fn view_state(provider: Arc<dyn Provider>, prefix: String, contract_id
     let response: RpcQueryResponse = provider.query(query_request).await?;
 
     if let QueryResponseKind::ViewState(result) = response.kind {
+        Ok(result)
+    } else {
+        Err("Unexpected response kind".into())
+    }
+}
+
+pub async fn get_access_key(provider: Arc<dyn Provider>, account_id: AccountId) -> Result<near_primitives::views::AccessKeyList, Box<dyn std::error::Error>> {
+
+    let query_request = QueryRequest::ViewAccessKeyList { 
+        account_id:  account_id,
+    };
+    
+    // Send the query to the NEAR blockchain
+    let response: RpcQueryResponse = provider.query(query_request).await?;
+
+    if let QueryResponseKind::AccessKeyList(result) = response.kind {
+        Ok(result)
+    } else {
+        Err("Unexpected response kind".into())
+    }
+}
+
+pub async fn state(provider: Arc<dyn Provider>, account_id: AccountId) -> Result<near_primitives::views::AccountView, Box<dyn std::error::Error>> {
+
+    let query_request = QueryRequest::ViewAccount { 
+        account_id: account_id, 
+    };
+    
+    // Send the query to the NEAR blockchain
+    let response: RpcQueryResponse = provider.query(query_request).await?;
+
+    if let QueryResponseKind::ViewAccount(result) = response.kind {
         Ok(result)
     } else {
         Err("Unexpected response kind".into())

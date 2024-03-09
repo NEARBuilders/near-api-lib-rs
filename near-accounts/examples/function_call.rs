@@ -19,21 +19,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Amount to transfer to the new account
     let gas: Gas = 100_000_000_000_000; // Example amount in yoctoNEAR
 
-    //let new_key_pair = near_crypto::SecretKey::from_random(near_crypto::KeyType::ED25519);
     let provider = Arc::new(JsonRpcProvider::new("https://rpc.testnet.near.org"));
     let signer = Arc::new(signer);
 
     let account = Account::new(signer_account_id, signer, provider);
     let method_name = "set_status".to_string();
 
-    let args_json = json!({"message": "working"});
+    let args_json = json!({"message": "working1"});
     // Serialize the JSON to a Vec<u8>
-    let args = serde_json::to_vec(&args_json)?;
-    //let args = vec!["status working"];
+    //let args = serde_json::to_vec(&args_json)?;
 
-    // Call create_account
-    let result = account.function_call(contract_id, method_name, args, gas, 0).await;
-
+    let result = account.function_call(contract_id, method_name, args_json, gas, 0).await;
 
     println!("response: {:#?}", result);
 

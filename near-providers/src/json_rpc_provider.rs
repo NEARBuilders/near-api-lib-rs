@@ -12,8 +12,7 @@ use near_jsonrpc_primitives::types::chunks::{RpcChunkError,  ChunkReference};
 use near_primitives::types::{BlockReference, EpochReference, Finality};
 use near_jsonrpc_primitives::types::blocks::RpcBlockError;
 use near_jsonrpc_primitives::types::validator::RpcValidatorError;
-use near_jsonrpc_primitives::types::query::{RpcQueryError, RpcQueryRequest, RpcQueryResponse, QueryResponseKind};
-//use near_primitives::views::QueryRequest
+use near_jsonrpc_primitives::types::query::{RpcQueryError, RpcQueryRequest, RpcQueryResponse};
 
 
 use crate::Provider;

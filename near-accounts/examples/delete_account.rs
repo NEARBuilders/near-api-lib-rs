@@ -1,4 +1,3 @@
-//use near_providers::Provider;
 use near_providers::JsonRpcProvider;
 use std::sync::Arc;
 use near_crypto::InMemorySigner;
@@ -10,8 +9,6 @@ use near_primitives::types::AccountId;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
 
-    // New Account ID: contract.near-api-rs.testnet
-    // Secret Key: ed25519:2ytXTGiGkMfpdW1JujZNebTCKRFQAFqq89fbkq9akBXy8kqqfhTqUCzmDexeNrCD1sjijMATdPWKzyCj9XnteFgN
     let signer_account_id: AccountId = utils::input("Enter the signer Account ID: ")?.parse()?;
     let signer_secret_key = utils::input("Enter the signer's private key: ")?.parse()?;
     let user_account_id: AccountId = utils::input("Enter the account name which need to be deleted ")?.parse()?;
@@ -21,7 +18,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let signer = Arc::new(signer);
 
     let account = Account::new(signer_account_id, signer, provider);
-    // Call create_account
+    
     let result = account.delete_account(user_account_id.clone()).await;
 
     println!("response: {:#?}", result);
