@@ -8,11 +8,20 @@ use near_providers::Provider;
 use std::sync::Arc;
 use crate::access_keys::{full_access_key, function_call_access_key}; 
 use serde_json::Value;
+use num_bigint::BigInt;
 
 pub struct Account {
     pub account_id: AccountId,
     pub signer: Arc<dyn Signer>,
     pub provider: Arc<dyn Provider>, // Use your Provider abstraction
+}
+
+#[derive(Debug)]
+pub struct AccountBalance {
+    pub total: String,
+    pub state_staked: String,
+    pub staked: String,
+    pub available: String,
 }
 
 impl Account {
@@ -74,13 +83,7 @@ impl Account {
     }
 
     pub async fn add_key(&self, public_key: PublicKey, allowance: Option<Balance>, contract_id: Option<String>, method_names: Option<Vec<String>>) -> Result<FinalExecutionOutcomeView, Box<dyn std::error::Error>> {
-        let nonce = self.fetch_nonce(&self.account_id, &self.signer.public_key()).await?;
         
-        //Block hash
-        let block_reference = BlockReference::Finality(Finality::Final);
-        let block = self.provider.block(block_reference).await?;
-        let block_hash = block.header.hash;
-
         let access_key: AccessKey = match contract_id {
             Some(cid) => {
                 if let Some(m_names) = method_names {
@@ -93,18 +96,24 @@ impl Account {
         };
 
         // Use TransactionBuilder to construct the transaction
-        let signed_tx = TransactionBuilder::new(
-            self.account_id.clone(), 
-            self.signer.public_key(), 
-            self.account_id.clone(), 
-            nonce+1, 
-            block_hash)
+        let signed_tx = self.get_transaction_builder(self.account_id.clone()).await?
             .add_key(public_key, access_key)
             .sign_transaction(&*self.signer); // Sign the transaction
 
         // Send the transaction
         let transaction_result = self.provider.send_transaction(signed_tx).await?;
         Ok(transaction_result)
+    }
+
+    pub async fn delete_key(&self, public_key: PublicKey) -> Result<FinalExecutionOutcomeView, Box<dyn std::error::Error>> {
+        // Use TransactionBuilder to construct the transaction
+        let signed_tx = self.get_transaction_builder(self.account_id.clone()).await?
+                        .delete_key(public_key)
+                        .sign_transaction(&*self.signer); // Sign the transaction
+
+        // Send the transaction
+        let transaction_result = self.provider.send_transaction(signed_tx).await?;
+        Ok(transaction_result) 
     }
 
     pub async fn deploy_contract(&self, byte_code: Vec<u8>) -> Result<FinalExecutionOutcomeView, Box<dyn std::error::Error>> {
@@ -225,4 +234,27 @@ pub async fn state(provider: Arc<dyn Provider>, account_id: AccountId) -> Result
     } else {
         Err("Unexpected response kind".into())
     }
+}
+
+pub async fn get_account_balance(provider: Arc<dyn Provider>, account_id: AccountId) -> Result<AccountBalance, Box<dyn std::error::Error>> {
+    // Assuming `experimental_protocol_config` and `state` are async functions you can call on the provider
+    let block_reference = BlockReference::Finality(Finality::Final);
+    let protocol_config = provider.experimental_protocol_config(block_reference).await?;
+    let cost_per_byte = BigInt::from(protocol_config.runtime_config.storage_amount_per_byte);
+
+    let state = state(provider, account_id).await?;
+
+    // Assuming state.storage_usage, state.locked, and state.amount are already BigInt or can be converted to BigInt
+    let state_staked = BigInt::from(state.storage_usage) * &cost_per_byte;
+    let staked = BigInt::from(state.locked);
+    let total_balance = BigInt::from(state.amount) + &staked;
+    let available_balance = if staked > state_staked { &total_balance - &staked } else { &total_balance - &state_staked };
+
+    // Convert BigInt to String for the struct. Handle potential conversion errors as needed
+    Ok(AccountBalance {
+        total: total_balance.to_string(),
+        state_staked: state_staked.to_string(),
+        staked: staked.to_string(),
+        available: available_balance.to_string(),
+    })
 }

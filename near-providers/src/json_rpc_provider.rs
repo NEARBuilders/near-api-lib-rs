@@ -13,6 +13,8 @@ use near_primitives::types::{BlockReference, EpochReference, Finality};
 use near_jsonrpc_primitives::types::blocks::RpcBlockError;
 use near_jsonrpc_primitives::types::validator::RpcValidatorError;
 use near_jsonrpc_primitives::types::query::{RpcQueryError, RpcQueryRequest, RpcQueryResponse};
+use near_jsonrpc_primitives::types::config::{RpcProtocolConfigError};
+use near_chain_configs::ProtocolConfigView;
 
 
 use crate::Provider;
@@ -91,6 +93,14 @@ impl Provider for JsonRpcProvider {
             block_reference,
         };
 
+        let response = self.client.call(request).await?;
+        Ok(response)
+    }
+
+    async fn experimental_protocol_config(&self, block_reference: BlockReference) -> Result<ProtocolConfigView, JsonRpcError<RpcProtocolConfigError>> {
+        let request = methods::EXPERIMENTAL_protocol_config::RpcProtocolConfigRequest {
+            block_reference,
+        };
         let response = self.client.call(request).await?;
         Ok(response)
     }

@@ -13,6 +13,8 @@ use near_jsonrpc_primitives::types::chunks::{RpcChunkError,  ChunkReference};
 use near_jsonrpc_primitives::types::blocks::RpcBlockError;
 use near_jsonrpc_primitives::types::validator::RpcValidatorError;
 use near_jsonrpc_primitives::types::query::{RpcQueryError, RpcQueryResponse};
+use near_jsonrpc_primitives::types::config::{RpcProtocolConfigError};
+use near_chain_configs::ProtocolConfigView;
 
 
 #[async_trait]
@@ -25,4 +27,5 @@ pub trait Provider {
     async fn block(&self, block_reference: BlockReference) -> Result<BlockView, JsonRpcError<RpcBlockError>>;
     async fn validators(&self, epoch_reference: EpochReference) -> Result<EpochValidatorInfo, JsonRpcError<RpcValidatorError>>;
     async fn query(&self, request: QueryRequest) -> Result<RpcQueryResponse, JsonRpcError<RpcQueryError>>;
+    async fn experimental_protocol_config(&self, block_reference: BlockReference) -> Result<ProtocolConfigView, JsonRpcError<RpcProtocolConfigError>>;
 }
