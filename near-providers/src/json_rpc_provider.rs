@@ -1,30 +1,37 @@
-use near_jsonrpc_client::methods::status::RpcStatusResponse;
-use near_jsonrpc_primitives::types::status::RpcStatusError;
-use near_jsonrpc_client::{methods, JsonRpcClient};
+//! The `JsonRpcProvider` module offers a concrete implementation of the `Provider` trait, utilizing JSON RPC to communicate with the NEAR blockchain.
+//! This provider enables applications to query blockchain status, submit transactions, and fetch various blockchain data in an asynchronous manner.
+
+use near_jsonrpc_client::{
+    errors::JsonRpcError,
+    methods::{self, status::RpcStatusResponse},
+    JsonRpcClient,
+};
+use near_jsonrpc_primitives::types::{
+    blocks::RpcBlockError,
+    chunks::{ChunkReference, RpcChunkError},
+    config::RpcProtocolConfigError,
+    query::{RpcQueryError, RpcQueryRequest, RpcQueryResponse},
+    status::RpcStatusError,
+    transactions::{RpcTransactionError, TransactionInfo},
+    validator::RpcValidatorError,
+};
 use async_trait::async_trait;
-use near_jsonrpc_client::errors::JsonRpcError;
-use near_primitives::views::{FinalExecutionOutcomeView, ChunkView, BlockView, EpochValidatorInfo, QueryRequest};
-use near_primitives::transaction::SignedTransaction;
-use near_jsonrpc_primitives::types::transactions::RpcTransactionError;
-use near_primitives::hash::CryptoHash;
-use near_jsonrpc_primitives::types::transactions::TransactionInfo;
-use near_jsonrpc_primitives::types::chunks::{RpcChunkError,  ChunkReference};
-use near_primitives::types::{BlockReference, EpochReference, Finality};
-use near_jsonrpc_primitives::types::blocks::RpcBlockError;
-use near_jsonrpc_primitives::types::validator::RpcValidatorError;
-use near_jsonrpc_primitives::types::query::{RpcQueryError, RpcQueryRequest, RpcQueryResponse};
-use near_jsonrpc_primitives::types::config::{RpcProtocolConfigError};
+use near_primitives::{
+    hash::CryptoHash,
+    transaction::SignedTransaction,
+    types::{BlockReference, EpochReference, Finality},
+    views::{BlockView, ChunkView, EpochValidatorInfo, FinalExecutionOutcomeView, QueryRequest},
+};
 use near_chain_configs::ProtocolConfigView;
-
-
 use crate::Provider;
 
-
+/// Represents a provider that uses JSON RPC to interact with the NEAR blockchain.
 pub struct JsonRpcProvider {
     client: JsonRpcClient,
 }
 
 impl JsonRpcProvider {
+    /// Constructs a new `JsonRpcProvider` with the specified RPC endpoint.
     pub fn new(rpc_endpoint: &str) -> Self {
         Self {
             client: JsonRpcClient::connect(rpc_endpoint),
@@ -34,34 +41,33 @@ impl JsonRpcProvider {
 
 #[async_trait]
 impl Provider for JsonRpcProvider {
+    /// Retrieves the current status of the NEAR blockchain.
     async fn status(&self) -> Result<RpcStatusResponse, JsonRpcError<RpcStatusError>> {
         let request = methods::status::RpcStatusRequest; // No params needed
         let server_status: RpcStatusResponse = self.client.call(request).await?;
         Ok(server_status)
     }
 
+    /// Executes a query on the NEAR blockchain using a given `QueryRequest`.
     async fn query(&self, request: QueryRequest) -> Result<RpcQueryResponse, JsonRpcError<RpcQueryError>> {
         let query_request = RpcQueryRequest {
             block_reference: BlockReference::Finality(Finality::Final),
             request,
         };  
         let response: RpcQueryResponse = self.client.call(query_request).await?;
-        // Deserialize the JSON string into `RpcQueryResponse`
-        // let response: RpcQueryResponse = serde_json::from_str(&response_body)
-        //     .map_err(|err| JsonRpcError::DeserializationError(err.to_string()))?;
         Ok(response)
     }
 
+    /// Sends a signed transaction to the NEAR blockchain, waiting for its final execution outcome.
     async fn send_transaction(&self, signed_transaction: SignedTransaction) -> Result<FinalExecutionOutcomeView, JsonRpcError<RpcTransactionError>>{
         let request = methods::broadcast_tx_commit::RpcBroadcastTxCommitRequest {
             signed_transaction,
         };
-        //should we typecast the response here or not, 
-        //do we recieve json string or specific response type on the basis of requestType
         let response = self.client.call(request).await?;
         Ok(response)
     }
 
+    /// Sends a signed transaction to the NEAR blockchain asynchronously, without waiting for its final execution outcome.
     async fn send_transaction_async(&self, signed_transaction: SignedTransaction) -> Result<CryptoHash, JsonRpcError<methods::broadcast_tx_async::RpcBroadcastTxAsyncError>>{
         let request = methods::broadcast_tx_async::RpcBroadcastTxAsyncRequest {
             signed_transaction,
@@ -70,6 +76,7 @@ impl Provider for JsonRpcProvider {
         Ok(response)
     }
 
+    /// Retrieves the status of a transaction on the NEAR blockchain, identified by `TransactionInfo`.
     async fn tx_status(&self, transaction_info: TransactionInfo) -> Result<FinalExecutionOutcomeView, JsonRpcError<RpcTransactionError>>{
         let request = methods::tx::RpcTransactionStatusRequest{
             transaction_info,
@@ -79,6 +86,7 @@ impl Provider for JsonRpcProvider {
         Ok(response)
     }
 
+    /// Fetches details of a specific chunk from the NEAR blockchain, identified by `ChunkReference`.
     async fn chunk(&self, chunk_reference: ChunkReference) -> Result<ChunkView, JsonRpcError<RpcChunkError>> {
         let request = methods::chunk::RpcChunkRequest{
             chunk_reference,
@@ -88,6 +96,7 @@ impl Provider for JsonRpcProvider {
         Ok(response)
     }
 
+    /// Retrieves a block from the NEAR blockchain, specified by its `BlockReference`.
     async fn block(&self, block_reference: BlockReference) -> Result<BlockView, JsonRpcError<RpcBlockError>> {
         let request = methods::block::RpcBlockRequest{
             block_reference,
@@ -97,6 +106,7 @@ impl Provider for JsonRpcProvider {
         Ok(response)
     }
 
+    /// Fetches the experimental protocol configuration for a specific block, identified by `BlockReference`.
     async fn experimental_protocol_config(&self, block_reference: BlockReference) -> Result<ProtocolConfigView, JsonRpcError<RpcProtocolConfigError>> {
         let request = methods::EXPERIMENTAL_protocol_config::RpcProtocolConfigRequest {
             block_reference,
@@ -105,6 +115,7 @@ impl Provider for JsonRpcProvider {
         Ok(response)
     }
 
+    /// Retrieves information about validators for a given epoch, specified by `EpochReference`.
     async fn validators(&self, epoch_reference: EpochReference) -> Result<EpochValidatorInfo, JsonRpcError<RpcValidatorError>> {
         let request = methods::validators::RpcValidatorRequest{
             epoch_reference,
@@ -146,68 +157,3 @@ async fn test_block() {
         Err(e) => panic!("Status request failed with {:?}", e),
     }
 }
-
-
-//RpcQueryRequest
-
-// pub struct RpcQueryRequest {
-//     #[serde(flatten)]
-//     pub block_reference: near_primitives::types::BlockReference,
-//     #[serde(flatten)]
-//     pub request: near_primitives::views::QueryRequest,
-// }
-
-//QueryRequest
-
-// #[derive(serde::Serialize, serde::Deserialize, Debug, PartialEq, Eq, Clone)]
-// #[serde(tag = "request_type", rename_all = "snake_case")]
-// pub enum QueryRequest {
-//     ViewAccount {
-//         account_id: AccountId,
-//     },
-//     ViewCode {
-//         account_id: AccountId,
-//     },
-//     ViewState {
-//         account_id: AccountId,
-//         #[serde(rename = "prefix_base64")]
-//         prefix: StoreKey,
-//         #[serde(default, skip_serializing_if = "is_false")]
-//         include_proof: bool,
-//     },
-//     ViewAccessKey {
-//         account_id: AccountId,
-//         public_key: PublicKey,
-//     },
-//     ViewAccessKeyList {
-//         account_id: AccountId,
-//     },
-//     CallFunction {
-//         account_id: AccountId,
-//         method_name: String,
-//         #[serde(rename = "args_base64")]
-//         args: FunctionArgs,
-//     },
-// }
-
-
-// RPC Query Response
-// #[derive(serde::Serialize, serde::Deserialize, Debug)]
-// pub struct RpcQueryResponse {
-//     #[serde(flatten)]
-//     pub kind: QueryResponseKind,
-//     pub block_height: near_primitives::types::BlockHeight,
-//     pub block_hash: near_primitives::hash::CryptoHash,
-// }
-
-// Query Response Kind
-// #[derive(serde::Serialize, serde::Deserialize, Debug)]
-// #[serde(untagged)]
-// pub enum QueryResponseKind {
-//     ViewAccount(near_primitives::views::AccountView),
-//     ViewCode(near_primitives::views::ContractCodeView),
-//     ViewState(near_primitives::views::ViewStateResult),
-//     CallResult(near_primitives::views::CallResult),
-//     AccessKey(near_primitives::views::AccessKeyView),
-//     AccessKeyList(near_primitives::views::AccessKeyList),
-// }
