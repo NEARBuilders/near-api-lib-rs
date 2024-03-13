@@ -5,10 +5,14 @@ name: pr-status-check
 on:
   push:
     branches:
-    - 'master'
+    - 'main'
+    - 'bugfix/*'
+    - 'feature/*'
+    - 'bugfix/*'
+    - 'hotfix/*'
   pull_request:
     branches:
-    - 'master'
+    - 'main'
     - 'feature/*'
     - 'bugfix/*'
     - 'hotfix/*'

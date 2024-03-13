@@ -252,7 +252,7 @@ pub async fn view_state(
 ) -> Result<near_primitives::views::ViewStateResult, Box<dyn std::error::Error>> {
     let prefix_op = match prefix {
         Some(pf) => pf,
-        None => String::from("prefix"),
+        None => String::from(""),
     };
     let query_request = QueryRequest::ViewState {
         account_id: contract_id,
