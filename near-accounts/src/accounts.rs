@@ -274,9 +274,7 @@ pub async fn get_access_key(
     provider: Arc<dyn Provider>,
     account_id: AccountId,
 ) -> Result<near_primitives::views::AccessKeyList, Box<dyn std::error::Error>> {
-    let query_request = QueryRequest::ViewAccessKeyList {
-        account_id,
-    };
+    let query_request = QueryRequest::ViewAccessKeyList { account_id };
 
     // Send the query to the NEAR blockchain
     let response: RpcQueryResponse = provider.query(query_request).await?;
@@ -292,9 +290,7 @@ pub async fn state(
     provider: Arc<dyn Provider>,
     account_id: AccountId,
 ) -> Result<near_primitives::views::AccountView, Box<dyn std::error::Error>> {
-    let query_request = QueryRequest::ViewAccount {
-        account_id,
-    };
+    let query_request = QueryRequest::ViewAccount { account_id };
 
     // Send the query to the NEAR blockchain
     let response: RpcQueryResponse = provider.query(query_request).await?;

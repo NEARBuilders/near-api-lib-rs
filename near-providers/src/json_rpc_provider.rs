@@ -155,10 +155,7 @@ async fn test_block() {
     //let block_hash = provider.block(block_reference).await?;
     match provider.block(block_reference).await {
         Ok(response) => {
-            // Perform checks on the response
-            // For example, checking if the chain_id matches testnet
-            //println!("Received response: {:?}", response);
-            //assert!(response.chain_id.contains("testnet"), "Chain ID should contain 'testnet'");
+            println!("{}", response.author);
         }
         Err(e) => panic!("Status request failed with {:?}", e),
     }
