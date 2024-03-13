@@ -1,7 +1,7 @@
+use near_accounts::accounts::state;
+use near_primitives::types::AccountId;
 use near_providers::JsonRpcProvider;
 use std::sync::Arc;
-use near_primitives::types::AccountId;
-use near_accounts::accounts::{state};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
