@@ -5,17 +5,12 @@ name: pr-status-check
 on:
   push:
     branches:
-    - 'main'
-    - 'bugfix/*'
     - 'feature/*'
     - 'bugfix/*'
     - 'hotfix/*'
   pull_request:
     branches:
     - 'main'
-    - 'feature/*'
-    - 'bugfix/*'
-    - 'hotfix/*'
 
 permissions:
   contents: read
