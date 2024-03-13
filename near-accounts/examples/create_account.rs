@@ -1,8 +1,8 @@
+use near_accounts::Account;
+use near_crypto::InMemorySigner;
 use near_primitives::types::Gas;
 use near_providers::JsonRpcProvider;
 use std::sync::Arc;
-use near_crypto::InMemorySigner;
-use near_accounts::Account;
 mod utils;
 use near_primitives::types::{AccountId, Balance};
 use serde_json::json;
@@ -15,9 +15,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let signer_secret_key = utils::input("Enter the signer's private key: ")?.parse()?;
     //To-do, implement account exist check.
     let new_account_id: AccountId = utils::input("Enter new account name: ")?.parse()?;
-    
+
     let signer = InMemorySigner::from_secret_key(signer_account_id.clone(), signer_secret_key);
-        
+
     // Amount to transfer to the new account
     let gas: Gas = 100_000_000_000_000; // Example amount in yoctoNEAR
     let amount: Balance = 10_000_000_000_000_000_000_000; // Example amount in yoctoNEAR
@@ -36,10 +36,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         "new_public_key": new_secret_key.public_key()
     });
     // Serialize the JSON to a Vec<u8>
-    let args = serde_json::to_vec(&args_json)?;
+    // .into will convert it into Value type.
+    let args = serde_json::to_vec(&args_json)?.into();
 
-    let result = account.function_call(contract_id, method_name, args, gas, amount).await;
-
+    let result = account
+        .function_call(contract_id, method_name, args, gas, amount)
+        .await;
 
     println!("response: {:#?}", result);
     println!("New Account ID: {}", new_account_id);
@@ -48,4 +50,4 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-//Test transaction - https://testnet.nearblocks.io/txns/81kqpntzQYWpVaG4TGhfcdJzeWVQLKFwTKCf4QMDcJbR#execution 
+//Test transaction - https://testnet.nearblocks.io/txns/81kqpntzQYWpVaG4TGhfcdJzeWVQLKFwTKCf4QMDcJbR#execution

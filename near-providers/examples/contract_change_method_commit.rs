@@ -9,7 +9,6 @@ use near_providers::JsonRpcProvider;
 // can we change it somehow with better crate design?
 use near_providers::Provider;
 
-
 use serde_json::json;
 
 mod utils;
