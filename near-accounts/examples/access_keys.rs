@@ -1,6 +1,5 @@
 use near_accounts::Account;
 use near_crypto::InMemorySigner;
-use near_crypto::Signer;
 use near_primitives::types::Balance;
 use near_providers::JsonRpcProvider;
 use std::sync::Arc;

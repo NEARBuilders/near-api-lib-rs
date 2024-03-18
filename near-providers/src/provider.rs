@@ -4,13 +4,11 @@
 //! The `Provider` trait is designed to be implemented by specific providers, with a JSON RPC provider currently implemented,
 //! allowing users to easily connect to and interact with the NEAR chain.
 
-use async_trait::async_trait;
-use near_chain_configs::ProtocolConfigView;
-use near_jsonrpc_client::{
+use crate::jsonrpc_client::{
     errors::JsonRpcError,
     methods::{self, status::RpcStatusResponse},
 };
-use near_jsonrpc_primitives::types::{
+use crate::types::{
     blocks::RpcBlockError,
     chunks::{ChunkReference, RpcChunkError},
     config::RpcProtocolConfigError,
@@ -19,6 +17,8 @@ use near_jsonrpc_primitives::types::{
     transactions::{RpcTransactionError, TransactionInfo},
     validator::RpcValidatorError,
 };
+use async_trait::async_trait;
+use near_chain_configs::ProtocolConfigView;
 use near_primitives::{
     hash::CryptoHash,
     transaction::SignedTransaction,
