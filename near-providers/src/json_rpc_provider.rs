@@ -4,12 +4,12 @@
 use crate::Provider;
 use async_trait::async_trait;
 use near_chain_configs::ProtocolConfigView;
-use near_jsonrpc_client::{
+use crate::jsonrpc_client::{
     errors::JsonRpcError,
     methods::{self, status::RpcStatusResponse},
     JsonRpcClient,
 };
-use near_jsonrpc_primitives::types::{
+use crate::types::{
     blocks::RpcBlockError,
     chunks::{ChunkReference, RpcChunkError},
     config::RpcProtocolConfigError,
