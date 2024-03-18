@@ -1,24 +1,60 @@
+# Near Providers
 
-## Provider crate - A high level crate abstracting near-jsonrpc-client for interacting with Near blockchain.
+The `near-providers` crate provides a high-level abstraction over the `near-jsonrpc-client` for interacting with the NEAR blockchain. It simplifies the process of sending transactions, querying chain status, and performing other chain-related tasks by encapsulating the JSON RPC calls into easy-to-use methods.
 
-  
+## Features
 
-### To test current methods from the provider, run below commands
+- Simplified interaction with the NEAR blockchain.
+- Methods for querying blockchain status, sending transactions, and fetching transaction or block information.
+- Support for both synchronous and asynchronous transactions.
+- Implementation of the `Provider` trait to allow for easy extension with more providers in the future.
 
-**Below command runs the unit test to test status function.**
+## Getting Started
 
+### Prerequisites
+
+This crate requires Rust and Cargo. Ensure you have the latest version of Rust installed. You can install Rust using [`rustup`](https://rustup.rs/).
+
+### Adding `near-providers` to Your Crate
+
+To use `near-providers`, add it as a dependency in your `Cargo.toml`:
+
+```toml
+[dependencies]
+near-providers = "0.1.0"
 ```
 
-cargo test --lib
+### Usage
+Below is an example of how to instantiate a `JsonRpcProvider` and use it to fetch the status of the NEAR blockchain:
 
+
+
+```Rust
+use near_providers::JsonRpcProvider;
+
+#[tokio::main]
+async fn main() {
+    let provider = JsonRpcProvider::new("https://rpc.testnet.near.org");
+    
+    match provider.status().await {
+        Ok(status) => println!("Chain status: {:?}", status),
+        Err(e) => eprintln!("Error fetching chain status: {:?}", e),
+    }
+}
 ```
 
-  
+### Examples
 
-**Below command runs the example to test send_transaction function.**
+The crate includes examples that demonstrate how to use various features. To run an example, use the following command:
 
-```
+`cargo run --example <example_name>` 
 
-cargo run --example contract_change_method_commit
+For instance, to test the `send_transaction` function:
 
-```
+`cargo run --example contract_change_method_commit`
+
+
+## Contributing
+
+We welcome contributions to the `near-providers` crate! Please feel free to submit pull requests or open issues to suggest improvements or add new features.
+
