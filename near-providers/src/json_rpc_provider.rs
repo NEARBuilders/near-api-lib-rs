@@ -1,9 +1,6 @@
 //! The `JsonRpcProvider` module offers a concrete implementation of the `Provider` trait, utilizing JSON RPC to communicate with the NEAR blockchain.
 //! This provider enables applications to query blockchain status, submit transactions, and fetch various blockchain data in an asynchronous manner.
 
-use crate::Provider;
-use async_trait::async_trait;
-use near_chain_configs::ProtocolConfigView;
 use crate::jsonrpc_client::{
     errors::JsonRpcError,
     methods::{self, status::RpcStatusResponse},
@@ -18,6 +15,9 @@ use crate::types::{
     transactions::{RpcTransactionError, TransactionInfo},
     validator::RpcValidatorError,
 };
+use crate::Provider;
+use async_trait::async_trait;
+use near_chain_configs::ProtocolConfigView;
 use near_primitives::{
     hash::CryptoHash,
     transaction::SignedTransaction,

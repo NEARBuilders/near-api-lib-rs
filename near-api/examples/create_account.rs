@@ -1,10 +1,10 @@
+use near_api::primitives::types::{AccountId, Balance, Gas};
 use near_api::Account;
 use near_api::InMemorySigner;
 use near_api::JsonRpcProvider;
-use near_api::primitives::types::{AccountId, Balance, Gas};
 
-use std::sync::Arc;
 use serde_json::json;
+use std::sync::Arc;
 
 mod utils;
 

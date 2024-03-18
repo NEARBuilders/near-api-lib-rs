@@ -1,9 +1,9 @@
 use crate::access_keys::{full_access_key, function_call_access_key};
 use near_crypto::{PublicKey, Signer};
-use near_providers::types::query::{QueryResponseKind, RpcQueryResponse};
 use near_primitives::account::AccessKey;
 use near_primitives::types::{AccountId, Balance, BlockReference, Finality, FunctionArgs, Gas};
 use near_primitives::views::{FinalExecutionOutcomeView, QueryRequest};
+use near_providers::types::query::{QueryResponseKind, RpcQueryResponse};
 use near_providers::Provider;
 use near_transactions::TransactionBuilder;
 use num_bigint::BigInt;
@@ -12,7 +12,7 @@ use std::sync::Arc;
 
 pub struct Account {
     pub account_id: AccountId,
-    pub signer: Arc<dyn Signer>, // Use your Signer abstraction
+    pub signer: Arc<dyn Signer>,     // Use your Signer abstraction
     pub provider: Arc<dyn Provider>, // Use your Provider abstraction
 }
 
