@@ -1,7 +1,7 @@
+use near_accounts::Account;
+use near_crypto::InMemorySigner;
 use near_providers::JsonRpcProvider;
 use std::sync::Arc;
-use near_crypto::InMemorySigner;
-use near_accounts::Account;
 mod utils;
 use near_primitives::types::AccountId;
 use serde_json::json;
@@ -24,9 +24,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let args_vec = serde_json::to_vec(&args_json)?.into();
 
-    let result = account.view_function(contract_id, method_name, args_vec).await;
+    let result = account
+        .view_function(contract_id, method_name, args_vec)
+        .await;
 
     println!("response: {:#?}", result);
 
-    Ok(())  
+    Ok(())
 }

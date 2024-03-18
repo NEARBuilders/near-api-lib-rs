@@ -11,7 +11,6 @@
 //! This crate is designed to be easily extendable with more providers and to offer a
 //! straightforward way to integrate NEAR blockchain functionalities into Rust applications.
 
-
 // Re-export the Provider trait
 pub use crate::provider::Provider;
 // Re-export the JsonRpcProvider

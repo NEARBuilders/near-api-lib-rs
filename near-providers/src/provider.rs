@@ -1,22 +1,15 @@
-//! This module defines the `Provider` trait for interacting with the NEAR blockchain. 
-//! It provides a high-level API for various blockchain operations, such as querying the chain status, 
-//! sending transactions, and fetching information about blocks, chunks, and validators. 
-//! The `Provider` trait is designed to be implemented by specific providers, with a JSON RPC provider currently implemented, 
+//! This module defines the `Provider` trait for interacting with the NEAR blockchain.
+//! It provides a high-level API for various blockchain operations, such as querying the chain status,
+//! sending transactions, and fetching information about blocks, chunks, and validators.
+//! The `Provider` trait is designed to be implemented by specific providers, with a JSON RPC provider currently implemented,
 //! allowing users to easily connect to and interact with the NEAR chain.
 
-
 use async_trait::async_trait;
+use near_chain_configs::ProtocolConfigView;
 use near_jsonrpc_client::{
     errors::JsonRpcError,
     methods::{self, status::RpcStatusResponse},
 };
-use near_primitives::{
-    hash::CryptoHash,
-    transaction::SignedTransaction,
-    types::{BlockReference, EpochReference},
-    views::{BlockView, ChunkView, EpochValidatorInfo, FinalExecutionOutcomeView, QueryRequest},
-};
-use near_chain_configs::ProtocolConfigView;
 use near_jsonrpc_primitives::types::{
     blocks::RpcBlockError,
     chunks::{ChunkReference, RpcChunkError},
@@ -25,6 +18,12 @@ use near_jsonrpc_primitives::types::{
     status::RpcStatusError,
     transactions::{RpcTransactionError, TransactionInfo},
     validator::RpcValidatorError,
+};
+use near_primitives::{
+    hash::CryptoHash,
+    transaction::SignedTransaction,
+    types::{BlockReference, EpochReference},
+    views::{BlockView, ChunkView, EpochValidatorInfo, FinalExecutionOutcomeView, QueryRequest},
 };
 
 #[async_trait]
