@@ -1,3 +1,8 @@
+//! The `accounts` module provides functionalities for managing NEAR blockchain accounts,
+//! allowing for operations such as account creation, access key management, contract deployment, making change and view function calls,
+//! and transaction execution. It abstracts the complexities of transaction construction and signing,
+//! making it easier to perform account-related operations.
+
 use crate::access_keys::{full_access_key, function_call_access_key};
 use near_crypto::{PublicKey, Signer};
 use near_primitives::account::AccessKey;
@@ -10,12 +15,14 @@ use num_bigint::BigInt;
 use serde_json::Value;
 use std::sync::Arc;
 
+/// Represents a NEAR account, encapsulating account ID, signer, and provider for blockchain interaction.
 pub struct Account {
     pub account_id: AccountId,
     pub signer: Arc<dyn Signer>,     // Use your Signer abstraction
     pub provider: Arc<dyn Provider>, // Use your Provider abstraction
 }
 
+/// Represents the balance details of a NEAR account.
 #[derive(Debug)]
 pub struct AccountBalance {
     pub total: String,
@@ -25,6 +32,17 @@ pub struct AccountBalance {
 }
 
 impl Account {
+    /// Constructs a new `Account` instance.
+    ///
+    /// # Arguments
+    ///
+    /// * `account_id` - The unique account identifier on the NEAR blockchain.
+    /// * `signer` - A signer instance for signing transactions.
+    /// * `provider` - A provider instance for interacting with the blockchain.
+    ///
+    /// # Returns
+    ///
+    /// A new `Account` instance.
     pub fn new(
         account_id: AccountId,
         signer: Arc<dyn Signer>,
@@ -37,6 +55,15 @@ impl Account {
         }
     }
 
+    /// Prepares a `TransactionBuilder` for constructing a transaction.
+    ///
+    /// # Arguments
+    ///
+    /// * `receiver_id` - The account ID of the transaction's receiver.
+    ///
+    /// # Returns
+    ///
+    /// A result containing a `TransactionBuilder` instance or an error if fetching the nonce or block hash failed.
     async fn get_transaction_builder(
         &self,
         receiver_id: AccountId,
@@ -62,7 +89,16 @@ impl Account {
         Ok(signed_tx)
     }
 
-    // Function to fetch the current nonce for an account's access key
+    /// Fetches the current nonce for an account's access key.
+    ///
+    /// # Arguments
+    ///
+    /// * `account_id` - The account ID for which to fetch the nonce.
+    /// * `public_key` - The public key of the access key.
+    ///
+    /// # Returns
+    ///
+    /// A result containing the nonce or an error if the query failed.
     pub async fn fetch_nonce(
         &self,
         account_id: &AccountId,
@@ -84,6 +120,19 @@ impl Account {
         }
     }
 
+    /// Creates a sub account for the signer account id.
+    ///
+    /// # Arguments
+    ///
+    /// * `new_account_id` - The new account ID you want to create. As it will be a sub account of the signer, your new_account_id should be of the form *.signer_account_id.near/testnet
+    /// * `public_key` - The public key for the new account.
+    /// * `amount` - Initial balance of the new account
+    ///
+    /// # Returns
+    ///
+    /// A final execution outcome of the transaction.
+    ///
+    /// # Note: The accounts created by this function will be of the form *.signer_account_id.near/testnet
     pub async fn create_account(
         &self,
         new_account_id: AccountId,
@@ -104,6 +153,18 @@ impl Account {
         Ok(transaction_result)
     }
 
+    /// Adds a full or function call access key to an account
+    ///
+    /// # Arguments
+    ///
+    /// * `public_key` - The new access key you want to add.
+    /// * `allowance` - The allowance this new key can use
+    /// * `contract_id` - Incase of function call access key, define the contract the key has access to.
+    /// * `method_names` - Incase of function call access key, which define names of methods which the key will have access to. Passing an empty array [] gives you access to call functions.
+    ///
+    /// # Returns
+    ///
+    /// A final execution outcome of the transaction.
     pub async fn add_key(
         &self,
         public_key: PublicKey,
@@ -134,6 +195,15 @@ impl Account {
         Ok(transaction_result)
     }
 
+    /// Delete a key from an account
+    ///
+    /// # Arguments
+    ///
+    /// * `public_key` - The access key you want to delete.
+    ///
+    /// # Returns
+    ///
+    /// A final execution outcome of the transaction.
     pub async fn delete_key(
         &self,
         public_key: PublicKey,
@@ -150,6 +220,15 @@ impl Account {
         Ok(transaction_result)
     }
 
+    /// Deploys a contract to the account associated with this `Account` instance.
+    ///
+    /// # Arguments
+    ///
+    /// * `byte_code` - The compiled smart contract code as a vector of bytes.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing the final execution outcome of the contract deployment or an error if the operation fails.
     pub async fn deploy_contract(
         &self,
         byte_code: Vec<u8>,
@@ -166,6 +245,15 @@ impl Account {
         Ok(transaction_result)
     }
 
+    /// Deletes the specified account and transfers any remaining tokens to the beneficiary account.
+    ///
+    /// # Arguments
+    ///
+    /// * `beneficiary_id` - The account ID to which the remaining balance will be transferred.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing the final execution outcome of the account deletion or an error if the operation fails.
     pub async fn delete_account(
         &self,
         beneficiary_id: AccountId,
@@ -182,6 +270,17 @@ impl Account {
         Ok(transaction_result)
     }
 
+    /// Transfers a specified amount of NEAR tokens from this account to another account.
+    ///
+    /// # Arguments
+    ///
+    /// * `receiver_id` - The account ID of the recipient.
+    /// * `amount` - The amount of NEAR tokens to transfer, in yoctoNEAR.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing the final execution outcome of the transfer or an error if the operation fails.
+    ///
     pub async fn send_money(
         &self,
         receiver_id: AccountId,
@@ -199,6 +298,19 @@ impl Account {
         Ok(transaction_result)
     }
 
+    /// Calls a function on a smart contract deployed on the NEAR blockchain.
+    ///
+    /// # Arguments
+    ///
+    /// * `contract_id` - The account ID of the contract.
+    /// * `method_name` - The name of the function to call.
+    /// * `args` - The arguments to the function call, serialized into a JSON `Value`.
+    /// * `gas` - The amount of gas to attach to the call.
+    /// * `deposit` - The amount of NEAR tokens to transfer to the contract, in yoctoNEAR.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing the final execution outcome of the function call or an error if the operation fails.
     pub async fn function_call(
         &self,
         contract_id: AccountId,
@@ -222,6 +334,19 @@ impl Account {
         Ok(transaction_result)
     }
 
+    /// Calls a view function on a contract deployed on the NEAR blockchain.
+    ///
+    /// View functions are read-only and do not modify state. They're free to call.
+    ///
+    /// # Arguments
+    ///
+    /// * `contract_id` - The account ID of the contract.
+    /// * `method_name` - The name of the view function to call.
+    /// * `args` - The arguments to the function call, typically in the form of a serialized byte array (`FunctionArgs`).
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing the result of the function call or an error if the operation fails.
     pub async fn view_function(
         &self,
         contract_id: AccountId,
@@ -245,6 +370,19 @@ impl Account {
     }
 }
 
+/// Queries the state of a contract on the NEAR blockchain using a key prefix.
+///
+/// This method allows you to inspect the storage of a contract, filtered by a key prefix.
+///
+/// # Arguments
+///
+/// * `provider` - The provider through which to query the blockchain.
+/// * `contract_id` - The account ID of the contract whose state is being queried.
+/// * `prefix` - An optional key prefix to filter the state by. If `None`, all state is returned.
+///
+/// # Returns
+///
+/// A `Result` containing the contract's state filtered by the specified prefix, or an error if the query fails.
 pub async fn view_state(
     provider: Arc<dyn Provider>,
     contract_id: AccountId,
@@ -270,6 +408,16 @@ pub async fn view_state(
     }
 }
 
+/// Retrieves the list of access keys for a given account.
+///
+/// # Arguments
+///
+/// * `provider` - The provider through which to query the blockchain.
+/// * `account_id` - The account ID for which to retrieve access keys.
+///
+/// # Returns
+///
+/// A `Result` containing a list of access keys for the specified account, or an error if the operation fails.
 pub async fn get_access_key(
     provider: Arc<dyn Provider>,
     account_id: AccountId,
@@ -286,6 +434,16 @@ pub async fn get_access_key(
     }
 }
 
+/// Retrieves the state of an account on the NEAR blockchain.
+///
+/// # Arguments
+///
+/// * `provider` - The provider through which to query the blockchain.
+/// * `account_id` - The account ID whose state is being queried.
+///
+/// # Returns
+///
+/// A `Result` containing the state of the specified account, or an error if the query fails.
 pub async fn state(
     provider: Arc<dyn Provider>,
     account_id: AccountId,
@@ -302,6 +460,16 @@ pub async fn state(
     }
 }
 
+/// Retrieves the balance details of a specific account on the NEAR blockchain.
+///
+/// # Arguments
+///
+/// * `provider` - The provider through which to query the blockchain.
+/// * `account_id` - The account ID whose balance details are being queried.
+///
+/// # Returns
+///
+/// A `Result` containing the balance details of the account, structured as `AccountBalance`, or an error if the query fails.
 pub async fn get_account_balance(
     provider: Arc<dyn Provider>,
     account_id: AccountId,
