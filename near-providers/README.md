@@ -1,4 +1,4 @@
-# Near Providers
+# near-providers
 
 The `near-providers` crate provides a high-level abstraction over the `near-jsonrpc-client` for interacting with the NEAR blockchain. It simplifies the process of sending transactions, querying chain status, and performing other chain-related tasks by encapsulating the JSON RPC calls into easy-to-use methods.
 
@@ -21,11 +21,11 @@ To use `near-providers`, add it as a dependency in your `Cargo.toml`:
 
 ```toml
 [dependencies]
-near-providers = "0.1.0"
+near-providers = "0.1.0-alpha"
 ```
 
 ### Usage
-Below is an example of how to instantiate a `JsonRpcProvider` and use it to fetch the status of the NEAR blockchain:
+Below is an example of creating a new account, deploying a contract, and querying account state:
 
 
 

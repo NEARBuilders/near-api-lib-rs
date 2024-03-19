@@ -1,11 +1,12 @@
-use near_accounts::Account;
-use near_crypto::InMemorySigner;
-use near_primitives::types::Gas;
-use near_providers::JsonRpcProvider;
-use std::sync::Arc;
-mod utils;
-use near_primitives::types::{AccountId, Balance};
+use near_api::primitives::types::{AccountId, Balance, Gas};
+use near_api::Account;
+use near_api::InMemorySigner;
+use near_api::JsonRpcProvider;
+
 use serde_json::json;
+use std::sync::Arc;
+
+mod utils;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

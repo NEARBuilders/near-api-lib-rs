@@ -1,11 +1,11 @@
+use near_accounts::Account;
+use near_crypto::InMemorySigner;
 use near_providers::JsonRpcProvider;
 use std::sync::Arc;
-use near_crypto::InMemorySigner;
-use near_accounts::Account;
 mod utils;
 use near_primitives::types::AccountId;
-use std::io;
 use std::fs::File;
+use std::io;
 use std::io::Read;
 
 fn read_wasm_file() -> io::Result<Vec<u8>> {
@@ -30,14 +30,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let account = Account::new(signer_account_id, signer, provider);
 
     let wasm_code = read_wasm_file()?;
-    
+
     let result = account.deploy_contract(wasm_code).await;
 
     println!("response: {:#?}", result);
 
     Ok(())
 }
-
 
 // New Account ID: contract.near-api-rs.testnet
 // Secret Key: ed25519:2ytXTGiGkMfpdW1JujZNebTCKRFQAFqq89fbkq9akBXy8kqqfhTqUCzmDexeNrCD1sjijMATdPWKzyCj9XnteFgN

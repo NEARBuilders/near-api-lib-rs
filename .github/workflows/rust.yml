@@ -1,0 +1,37 @@
+# This workflow is to status checks for all PRs for a given repo
+name: pr-status-check
+
+# Triggered when push or pull request on selected branches
+on:
+  push:
+    branches:
+    - 'feature/*'
+    - 'bugfix/*'
+    - 'hotfix/*'
+  pull_request:
+    branches:
+    - 'main'
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build
+      run: cargo build --verbose
+    - name: cargo test
+      run: cargo test --all-features
+
+    - name: rustfmt
+      run: cargo fmt --all -- --check
+
+    - name: clippy
+      run: cargo clippy --all --all-features --tests -- -D warnings
