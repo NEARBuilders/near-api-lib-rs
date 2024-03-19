@@ -11,18 +11,18 @@
 //! This crate is designed to be easily extendable with more providers and to offer a
 //! straightforward way to integrate NEAR blockchain functionalities into Rust applications.
 
-// Re-export the Provider trait
-pub use crate::provider::Provider;
-// Re-export the JsonRpcProvider
+/// Re-export the JsonRpcProvider
 pub use crate::json_rpc_provider::JsonRpcProvider;
+/// Re-export the Provider trait
+pub use crate::provider::Provider;
 
 /// Re-exporting jsonrpc_primitives types so users of near-providers don't need
 /// to keep track of multiple jsonrpc crates. For now we export them as types
 /// but when we implement more providers, we can change it to jsonrpc_types
 pub use near_jsonrpc_primitives::types;
 
-pub use near_jsonrpc_client as jsonrpc_client;
 /// Use near_jsonrpc_primitives/client easily with near_providers
+pub use near_jsonrpc_client as jsonrpc_client;
 pub use near_jsonrpc_primitives as jsonrpc_primitives;
 
 mod json_rpc_provider;
