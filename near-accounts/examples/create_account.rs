@@ -35,12 +35,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         "new_account_id": new_account_id,
         "new_public_key": new_secret_key.public_key()
     });
-    // Serialize the JSON to a Vec<u8>
-    // .into will convert it into Value type.
-    let args = serde_json::to_vec(&args_json)?.into();
 
     let result = account
-        .function_call(contract_id, method_name, args, gas, amount)
+        .function_call(contract_id, method_name, args_json, gas, amount)
         .await;
 
     println!("response: {:#?}", result);

@@ -1,9 +1,8 @@
 
 # near-api-lib
 
-  
 The NEAR API library is a comprehensive Rust library designed to simplify the development of applications on the NEAR blockchain. It provides developers with essential tools and abstractions for account management, transaction building and signing, querying the blockchain state, and performing cryptographic operations, all from the comfort of Rust.
- 
+
 
 ## Features
 
@@ -22,14 +21,22 @@ The NEAR API library is a comprehensive Rust library designed to simplify the de
 
 ## Getting Started
 
+  
+
 Add the following to your Cargo.toml file:
+
+  
 
 ```toml
 [dependencies]
 near-api-lib = "0.1.0-alpha"
 ```
 
+  
+
 ### Usage
+
+  
 
 ```rust
 use near_api_lib::primitives::types::{AccountId, Balance, Gas};

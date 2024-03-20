@@ -2,11 +2,13 @@
 name = "near-accounts"
 version = "0.1.0-alpha"
 edition = "2021"
+description = "Simplify interaction with NEAR Protocol accounts. High-level abstractions for managing accounts, deploying contracts, and executing transactions on the NEAR blockchain."
+license = "MIT OR Apache-2.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-near-crypto = "0.20.0"
+near-crypto = "0.20.1"
 near-primitives = "0.20.1"
 near-providers = {path ="../near-providers"}
 near-transactions = {path ="../near-transactions"}

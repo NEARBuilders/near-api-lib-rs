@@ -1,13 +1,12 @@
 [workspace]
-
+resolver = "2"
 members = [
     "near-providers",
     "near-transactions",
-    "near-api",
+    "near-api-lib",
     "near-accounts"
 ]
-
 exclude = ["examples/"]
 
 [workspace.package]
-version = "0.0.1"
+version = "0.1.0-alpha"
