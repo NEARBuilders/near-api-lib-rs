@@ -1,5 +1,5 @@
-use near_api::accounts::view_state;
-use near_api::JsonRpcProvider;
+use near_api_lib::accounts::view_state;
+use near_api_lib::JsonRpcProvider;
 use near_primitives::types::AccountId;
 use std::sync::Arc;
 

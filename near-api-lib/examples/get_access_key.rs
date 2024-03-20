@@ -1,6 +1,6 @@
-use near_api::accounts::get_access_key;
-use near_api::primitives::types::AccountId;
-use near_api::JsonRpcProvider;
+use near_api_lib::accounts::get_access_key;
+use near_api_lib::primitives::types::AccountId;
+use near_api_lib::JsonRpcProvider;
 use std::sync::Arc;
 
 #[tokio::main]

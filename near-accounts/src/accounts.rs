@@ -6,7 +6,7 @@
 use crate::access_keys::{full_access_key, function_call_access_key};
 use near_crypto::{PublicKey, Signer};
 use near_primitives::account::AccessKey;
-use near_primitives::types::{AccountId, Balance, BlockReference, Finality, FunctionArgs, Gas};
+use near_primitives::types::{AccountId, Balance, BlockReference, Finality, Gas};
 use near_primitives::views::{FinalExecutionOutcomeView, QueryRequest};
 use near_providers::types::query::{QueryResponseKind, RpcQueryResponse};
 use near_providers::Provider;
@@ -351,12 +351,14 @@ impl Account {
         &self,
         contract_id: AccountId,
         method_name: String,
-        args: FunctionArgs,
+        args: Value,
     ) -> Result<near_primitives::views::CallResult, Box<dyn std::error::Error>> {
+        let args_vec = serde_json::to_vec(&args)?.into();
+
         let query_request = QueryRequest::CallFunction {
             account_id: contract_id.clone(),
             method_name: method_name.clone(),
-            args: args.clone(),
+            args: args_vec,
         };
 
         // Send the query to the NEAR blockchain
