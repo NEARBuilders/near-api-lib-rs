@@ -62,9 +62,6 @@
 //!     let method_name = "set_status".to_string();
 
 //!     let args_json = json!({"message": "working1"});
-//!     // Serialize the JSON to a Vec<u8>
-//!     //let args = serde_json::to_vec(&args_json)?;
-
 //!     let result = account
 //!         .function_call(contract_id, method_name, args_json, gas, 0)
 //!         .await;

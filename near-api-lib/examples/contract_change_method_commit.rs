@@ -1,13 +1,13 @@
-use near_api::primitives::transaction::{Action, FunctionCallAction, Transaction};
-use near_api::primitives::types::BlockReference;
-use near_api::providers::jsonrpc_client::{methods, JsonRpcClient};
-use near_api::providers::types::query::QueryResponseKind;
+use near_api_lib::primitives::transaction::{Action, FunctionCallAction, Transaction};
+use near_api_lib::primitives::types::BlockReference;
+use near_api_lib::providers::jsonrpc_client::{methods, JsonRpcClient};
+use near_api_lib::providers::types::query::QueryResponseKind;
 
-use near_api::JsonRpcProvider;
+use near_api_lib::JsonRpcProvider;
 
 // items from traits can only be used if the trait is in scope
 // can we change it somehow with better crate design?
-use near_api::providers::Provider;
+use near_api_lib::providers::Provider;
 
 use serde_json::json;
 
