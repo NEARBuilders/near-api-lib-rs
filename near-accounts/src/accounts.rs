@@ -353,7 +353,6 @@ impl Account {
         method_name: String,
         args: Value,
     ) -> Result<near_primitives::views::CallResult, Box<dyn std::error::Error>> {
-
         let args_vec = serde_json::to_vec(&args)?.into();
 
         let query_request = QueryRequest::CallFunction {
