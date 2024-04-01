@@ -27,7 +27,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let account = Account::new(signer_account_id, signer, provider);
     // Call create_account
     let result = account
-        .create_account(new_account_id.clone(), new_key_pair.public_key(), amount)
+        .create_account(&new_account_id, new_key_pair.public_key(), amount)
         .await;
 
     println!("response: {:#?}", result);

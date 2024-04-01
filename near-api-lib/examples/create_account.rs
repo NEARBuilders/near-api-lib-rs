@@ -38,7 +38,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     });
 
     let result = account
-        .function_call(contract_id, method_name, args_json, gas, amount)
+        .function_call(&contract_id, method_name, args_json, gas, amount)
         .await;
 
     println!("response: {:#?}", result);
