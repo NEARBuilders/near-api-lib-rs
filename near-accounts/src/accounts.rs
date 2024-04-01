@@ -191,8 +191,11 @@ impl Account {
             .sign_transaction(&*self.signer); // Sign the transaction
 
         // Send the transaction
-        let transaction_result = self.provider.send_transaction(signed_tx).await?;
-        Ok(transaction_result)
+        let transaction_result = self.provider.send_transaction(signed_tx).await;
+        match transaction_result {
+            Ok(transaction_result) => Ok(transaction_result),
+            Err(err) => Err(Box::new(err)),
+        }
     }
 
     /// Delete a key from an account
@@ -216,8 +219,11 @@ impl Account {
             .sign_transaction(&*self.signer); // Sign the transaction
 
         // Send the transaction
-        let transaction_result = self.provider.send_transaction(signed_tx).await?;
-        Ok(transaction_result)
+        let transaction_result = self.provider.send_transaction(signed_tx).await;
+        match transaction_result {
+            Ok(transaction_result) => Ok(transaction_result),
+            Err(err) => Err(Box::new(err)),
+        }
     }
 
     /// Deploys a contract to the account associated with this `Account` instance.
@@ -241,8 +247,11 @@ impl Account {
             .sign_transaction(&*self.signer); // Sign the transaction
 
         // Send the transaction
-        let transaction_result = self.provider.send_transaction(signed_tx).await?;
-        Ok(transaction_result)
+        let transaction_result = self.provider.send_transaction(signed_tx).await;
+        match transaction_result {
+            Ok(transaction_result) => Ok(transaction_result),
+            Err(err) => Err(Box::new(err)),
+        }
     }
 
     /// Deletes the specified account and transfers any remaining tokens to the beneficiary account.
@@ -266,8 +275,11 @@ impl Account {
             .sign_transaction(&*self.signer); // Sign the transaction
 
         // Send the transaction
-        let transaction_result = self.provider.send_transaction(signed_tx).await?;
-        Ok(transaction_result)
+        let transaction_result = self.provider.send_transaction(signed_tx).await;
+        match transaction_result {
+            Ok(transaction) => Ok(transaction),
+            Err(err) => Err(Box::new(err)),
+        }
     }
 
     /// Transfers a specified amount of NEAR tokens from this account to another account.
@@ -294,8 +306,11 @@ impl Account {
             .sign_transaction(&*self.signer); // Sign the transaction
 
         // Send the transaction
-        let transaction_result = self.provider.send_transaction(signed_tx).await?;
-        Ok(transaction_result)
+        let transaction_result = self.provider.send_transaction(signed_tx).await;
+        match transaction_result {
+            Ok(transaction_result) => Ok(transaction_result),
+            Err(err) => Err(Box::new(err)),
+        }
     }
 
     /// Calls a function on a smart contract deployed on the NEAR blockchain.
@@ -330,8 +345,11 @@ impl Account {
             .sign_transaction(&*self.signer); // Sign the transaction
 
         // Send the transaction
-        let transaction_result = self.provider.send_transaction(signed_tx).await?;
-        Ok(transaction_result)
+        let transaction_result = self.provider.send_transaction(signed_tx).await;
+        match transaction_result {
+            Ok(transaction_result) => Ok(transaction_result),
+            Err(err) => Err(Box::new(err)),
+        }
     }
 
     /// Calls a view function on a contract deployed on the NEAR blockchain.

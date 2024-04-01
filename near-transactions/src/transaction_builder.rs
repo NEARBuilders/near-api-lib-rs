@@ -67,7 +67,9 @@ impl TransactionBuilder {
     pub fn deploy_contract(&mut self, code: &[u8]) -> &mut Self {
         self.transaction
             .actions
-            .push(Action::DeployContract(DeployContractAction { code: code.to_vec() }));
+            .push(Action::DeployContract(DeployContractAction {
+                code: code.to_vec(),
+            }));
         self
     }
 

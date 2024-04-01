@@ -30,7 +30,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .create_account(&new_account_id, new_key_pair.public_key(), amount)
         .await;
 
-    println!("response: {:#?}", result);
+    match result {
+        Ok(res) => {
+            println!("transaction: {:#?}", res.transaction);
+            println!("status: {:#?}", res.status);
+            println!("receipts_outcome {:#?}", res.transaction_outcome);
+        }
+        Err(err) => println!("Error: {:#?}", err),
+    }
 
     println!("=============================================================");
     println!("New Account ID: {}", new_account_id);

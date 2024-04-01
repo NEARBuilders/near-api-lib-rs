@@ -40,9 +40,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .function_call(&contract_id, method_name, args_json, gas, amount)
         .await;
 
-    println!("response: {:#?}", result);
-    println!("New Account ID: {}", new_account_id);
-    println!("Secret Key: {}", new_secret_key);
+    match result {
+        Ok(res) => {
+            println!("transaction: {:#?}", res.transaction);
+            println!("status: {:#?}", res.status);
+            println!("receipts_outcome {:#?}", res.transaction_outcome);
+        }
+        Err(err) => println!("Error: {:#?}", err),
+    }
 
     Ok(())
 }

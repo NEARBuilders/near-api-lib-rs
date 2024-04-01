@@ -31,10 +31,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let wasm_code = read_wasm_file()?;
 
-    let result = account.deploy_contract(&wasm_code).await;
+    let response = account.deploy_contract(&wasm_code).await;
 
-    println!("response: {:#?}", result);
-
+    match response {
+        Ok(res) => {
+            println!("transaction: {:#?}", res.transaction);
+            println!("status: {:#?}", res.status);
+            println!("receipts_outcome {:#?}", res.transaction_outcome);
+        }
+        Err(err) => println!("Error: {:#?}", err),
+    }
     Ok(())
 }
 

@@ -20,9 +20,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let account = Account::new(signer_account_id, signer, provider);
 
-    let result = account.delete_account(user_account_id.clone()).await;
+    let response = account.delete_account(user_account_id.clone()).await;
 
-    println!("response: {:#?}", result);
-
+    match response {
+        Ok(res) => {
+            println!("transaction: {:#?}", res.transaction);
+            println!("status: {:#?}", res.status);
+            println!("receipts_outcome {:#?}", res.transaction_outcome);
+        }
+        Err(err) => println!("Error: {:#?}", err),
+    }
     Ok(())
 }
