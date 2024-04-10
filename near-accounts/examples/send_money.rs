@@ -24,9 +24,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let account = Account::new(signer_account_id, signer, provider);
     // Call create_account
-    let result = account
-        .send_money(&receiver_account_id, amount)
-        .await;
+    let result = account.send_money(&receiver_account_id, amount).await;
 
     println!("response: {:#?}", result);
 
