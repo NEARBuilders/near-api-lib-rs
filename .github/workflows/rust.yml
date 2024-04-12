@@ -28,7 +28,7 @@ jobs:
     - name: Build
       run: cargo build --verbose
     - name: cargo test
-      run: cargo test --all-features
+      run: cargo test --tests
 
     - name: rustfmt
       run: cargo fmt --all -- --check

@@ -9,7 +9,7 @@ use std::io;
 use std::io::Read;
 
 fn read_wasm_file() -> io::Result<Vec<u8>> {
-    let file_path = "accounts/examples/contract-wasm/status_message.wasm";
+    let file_path = "examples/contract-wasm/status_message.wasm";
     let mut file = File::open(file_path)?;
     let mut contents = Vec::new();
     file.read_to_end(&mut contents)?;
@@ -31,10 +31,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let wasm_code = read_wasm_file()?;
 
-    let result = account.deploy_contract(wasm_code).await;
+    let response = account.deploy_contract(&wasm_code).await;
 
-    println!("response: {:#?}", result);
-
+    match response {
+        Ok(res) => {
+            println!("transaction: {:#?}", res.transaction);
+            println!("status: {:#?}", res.status);
+            println!("receipts_outcome {:#?}", res.transaction_outcome);
+        }
+        Err(err) => println!("Error: {:#?}", err),
+    }
     Ok(())
 }
 

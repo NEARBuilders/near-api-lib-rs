@@ -23,7 +23,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let result = account.delete_key(public_key).await;
 
-    println!("response: {:#?}", result);
+    match result {
+        Ok(res) => {
+            println!("transaction: {:#?}", res.transaction);
+            println!("status: {:#?}", res.status);
+            println!("receipts_outcome {:#?}", res.transaction_outcome);
+        }
+        Err(err) => println!("Error: {:#?}", err),
+    }
 
     Ok(())
 }
