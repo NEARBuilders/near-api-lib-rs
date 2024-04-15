@@ -11,10 +11,10 @@ use near_primitives::views::{FinalExecutionOutcomeView, QueryRequest};
 use near_providers::types::query::{QueryResponseKind, RpcQueryResponse};
 use near_providers::Provider;
 use near_transactions::TransactionBuilder;
-use num_bigint::BigInt;
-use serde_json::Value;
-use std::sync::Arc;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
+use std::ops::{Add, Mul, Sub};
+use std::sync::Arc;
 
 /// Represents a NEAR account, encapsulating account ID, signer, and provider for blockchain interaction.
 pub struct Account {
@@ -497,18 +497,18 @@ pub async fn get_account_balance(
     let protocol_config = provider
         .experimental_protocol_config(block_reference)
         .await?;
-    let cost_per_byte = BigInt::from(protocol_config.runtime_config.storage_amount_per_byte);
+    // let cost_per_byte = BigInt::from(protocol_config.runtime_config.storage_amount_per_byte);
 
     let state = state(provider, account_id).await?;
 
-    // Assuming state.storage_usage, state.locked, and state.amount are already BigInt or can be converted to BigInt
-    let state_staked = BigInt::from(state.storage_usage) * &cost_per_byte;
-    let staked = BigInt::from(state.locked);
-    let total_balance = BigInt::from(state.amount) + &staked;
-    let available_balance = if staked > state_staked {
-        &total_balance - &staked
+    let staked = state.locked;
+    let state_staked = protocol_config.runtime_config.storage_amount_per_byte.mul(state.storage_usage as u128);
+    let total_balance = staked.add(state.amount);
+
+    let available_balance = if staked.ge(&state_staked) {
+        total_balance.sub(staked)
     } else {
-        &total_balance - &state_staked
+        total_balance.sub(state_staked)
     };
 
     // Convert BigInt to String for the struct. Handle potential conversion errors as needed
