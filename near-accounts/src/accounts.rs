@@ -502,7 +502,10 @@ pub async fn get_account_balance(
     let state = state(provider, account_id).await?;
 
     let staked = state.locked;
-    let state_staked = protocol_config.runtime_config.storage_amount_per_byte.mul(state.storage_usage as u128);
+    let state_staked = protocol_config
+        .runtime_config
+        .storage_amount_per_byte
+        .mul(state.storage_usage as u128);
     let total_balance = staked.add(state.amount);
 
     let available_balance = if staked.ge(&state_staked) {
