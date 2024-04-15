@@ -23,7 +23,7 @@ pub struct Account {
 }
 
 /// Represents the balance details of a NEAR account.
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Clone, Default)]
 pub struct AccountBalance {
     pub total: String,
     pub state_staked: String,
@@ -66,7 +66,7 @@ impl Account {
     /// A result containing a `TransactionBuilder` instance or an error if fetching the nonce or block hash failed.
     async fn get_transaction_builder(
         &self,
-        receiver_id: AccountId,
+        receiver_id: &AccountId,
     ) -> Result<TransactionBuilder, Box<dyn std::error::Error>> {
         // Fetch the current nonce for the signer account and latest block hash
         let nonce = self
@@ -82,7 +82,7 @@ impl Account {
         let signed_tx = TransactionBuilder::new(
             self.account_id.clone(),
             self.signer.public_key(),
-            receiver_id,
+            receiver_id.clone(),
             nonce + 1,
             block_hash,
         );
@@ -135,12 +135,12 @@ impl Account {
     /// # Note: The accounts created by this function will be of the form *.signer_account_id.near/testnet
     pub async fn create_account(
         &self,
-        new_account_id: AccountId,
+        new_account_id: &AccountId,
         public_key: PublicKey,
         amount: Balance,
     ) -> Result<FinalExecutionOutcomeView, Box<dyn std::error::Error>> {
         // Use TransactionBuilder to construct the transaction
-        let signed_tx = self
+        let signed_tx = &self
             .get_transaction_builder(new_account_id)
             .await?
             .create_account()
@@ -149,7 +149,7 @@ impl Account {
             .sign_transaction(&*self.signer); // Sign the transaction
 
         // Send the transaction
-        let transaction_result = self.provider.send_transaction(signed_tx).await?;
+        let transaction_result = self.provider.send_transaction(signed_tx.clone()).await?;
         Ok(transaction_result)
     }
 
@@ -185,14 +185,17 @@ impl Account {
 
         // Use TransactionBuilder to construct the transaction
         let signed_tx = self
-            .get_transaction_builder(self.account_id.clone())
+            .get_transaction_builder(&self.account_id)
             .await?
             .add_key(public_key, access_key)
             .sign_transaction(&*self.signer); // Sign the transaction
 
         // Send the transaction
-        let transaction_result = self.provider.send_transaction(signed_tx).await?;
-        Ok(transaction_result)
+        let transaction_result = self.provider.send_transaction(signed_tx).await;
+        match transaction_result {
+            Ok(transaction_result) => Ok(transaction_result),
+            Err(err) => Err(Box::new(err)),
+        }
     }
 
     /// Delete a key from an account
@@ -210,14 +213,17 @@ impl Account {
     ) -> Result<FinalExecutionOutcomeView, Box<dyn std::error::Error>> {
         // Use TransactionBuilder to construct the transaction
         let signed_tx = self
-            .get_transaction_builder(self.account_id.clone())
+            .get_transaction_builder(&self.account_id)
             .await?
             .delete_key(public_key)
             .sign_transaction(&*self.signer); // Sign the transaction
 
         // Send the transaction
-        let transaction_result = self.provider.send_transaction(signed_tx).await?;
-        Ok(transaction_result)
+        let transaction_result = self.provider.send_transaction(signed_tx).await;
+        match transaction_result {
+            Ok(transaction_result) => Ok(transaction_result),
+            Err(err) => Err(Box::new(err)),
+        }
     }
 
     /// Deploys a contract to the account associated with this `Account` instance.
@@ -231,18 +237,21 @@ impl Account {
     /// A `Result` containing the final execution outcome of the contract deployment or an error if the operation fails.
     pub async fn deploy_contract(
         &self,
-        byte_code: Vec<u8>,
+        byte_code: &[u8],
     ) -> Result<FinalExecutionOutcomeView, Box<dyn std::error::Error>> {
         // Use TransactionBuilder to construct the transaction
         let signed_tx = self
-            .get_transaction_builder(self.account_id.clone())
+            .get_transaction_builder(&self.account_id)
             .await?
             .deploy_contract(byte_code)
             .sign_transaction(&*self.signer); // Sign the transaction
 
         // Send the transaction
-        let transaction_result = self.provider.send_transaction(signed_tx).await?;
-        Ok(transaction_result)
+        let transaction_result = self.provider.send_transaction(signed_tx).await;
+        match transaction_result {
+            Ok(transaction_result) => Ok(transaction_result),
+            Err(err) => Err(Box::new(err)),
+        }
     }
 
     /// Deletes the specified account and transfers any remaining tokens to the beneficiary account.
@@ -260,14 +269,17 @@ impl Account {
     ) -> Result<FinalExecutionOutcomeView, Box<dyn std::error::Error>> {
         // Use TransactionBuilder to construct the transaction
         let signed_tx = self
-            .get_transaction_builder(self.account_id.clone())
+            .get_transaction_builder(&self.account_id)
             .await?
             .delete_account(beneficiary_id)
             .sign_transaction(&*self.signer); // Sign the transaction
 
         // Send the transaction
-        let transaction_result = self.provider.send_transaction(signed_tx).await?;
-        Ok(transaction_result)
+        let transaction_result = self.provider.send_transaction(signed_tx).await;
+        match transaction_result {
+            Ok(transaction) => Ok(transaction),
+            Err(err) => Err(Box::new(err)),
+        }
     }
 
     /// Transfers a specified amount of NEAR tokens from this account to another account.
@@ -283,19 +295,22 @@ impl Account {
     ///
     pub async fn send_money(
         &self,
-        receiver_id: AccountId,
+        receiver_id: &AccountId,
         amount: Balance,
     ) -> Result<FinalExecutionOutcomeView, Box<dyn std::error::Error>> {
         // Use TransactionBuilder to construct the transaction
         let signed_tx = self
-            .get_transaction_builder(receiver_id.clone())
+            .get_transaction_builder(receiver_id)
             .await?
             .transfer(amount)
             .sign_transaction(&*self.signer); // Sign the transaction
 
         // Send the transaction
-        let transaction_result = self.provider.send_transaction(signed_tx).await?;
-        Ok(transaction_result)
+        let transaction_result = self.provider.send_transaction(signed_tx).await;
+        match transaction_result {
+            Ok(transaction_result) => Ok(transaction_result),
+            Err(err) => Err(Box::new(err)),
+        }
     }
 
     /// Calls a function on a smart contract deployed on the NEAR blockchain.
@@ -313,7 +328,7 @@ impl Account {
     /// A `Result` containing the final execution outcome of the function call or an error if the operation fails.
     pub async fn function_call(
         &self,
-        contract_id: AccountId,
+        contract_id: &AccountId,
         method_name: String,
         args: Value,
         gas: Gas,
@@ -330,8 +345,11 @@ impl Account {
             .sign_transaction(&*self.signer); // Sign the transaction
 
         // Send the transaction
-        let transaction_result = self.provider.send_transaction(signed_tx).await?;
-        Ok(transaction_result)
+        let transaction_result = self.provider.send_transaction(signed_tx).await;
+        match transaction_result {
+            Ok(transaction_result) => Ok(transaction_result),
+            Err(err) => Err(Box::new(err)),
+        }
     }
 
     /// Calls a view function on a contract deployed on the NEAR blockchain.

@@ -28,7 +28,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args_json = json!({"message": "working1"});
 
     let result = account
-        .function_call(contract_id, method_name, args_json, gas, 0)
+        .function_call(&contract_id, method_name, args_json, gas, 0)
         .await;
 
     println!("response: {:#?}", result);

@@ -44,8 +44,7 @@ impl Provider for JsonRpcProvider {
     /// Retrieves the current status of the NEAR blockchain.
     async fn status(&self) -> Result<RpcStatusResponse, JsonRpcError<RpcStatusError>> {
         let request = methods::status::RpcStatusRequest; // No params needed
-        let server_status: RpcStatusResponse = self.client.call(request).await?;
-        Ok(server_status)
+        self.client.call(request).await
     }
 
     /// Executes a query on the NEAR blockchain using a given `QueryRequest`.
@@ -57,8 +56,7 @@ impl Provider for JsonRpcProvider {
             block_reference: BlockReference::Finality(Finality::Final),
             request,
         };
-        let response: RpcQueryResponse = self.client.call(query_request).await?;
-        Ok(response)
+        self.client.call(query_request).await
     }
 
     /// Sends a signed transaction to the NEAR blockchain, waiting for its final execution outcome.
@@ -68,8 +66,7 @@ impl Provider for JsonRpcProvider {
     ) -> Result<FinalExecutionOutcomeView, JsonRpcError<RpcTransactionError>> {
         let request =
             methods::broadcast_tx_commit::RpcBroadcastTxCommitRequest { signed_transaction };
-        let response = self.client.call(request).await?;
-        Ok(response)
+        self.client.call(request).await
     }
 
     /// Sends a signed transaction to the NEAR blockchain asynchronously, without waiting for its final execution outcome.
@@ -80,8 +77,7 @@ impl Provider for JsonRpcProvider {
     {
         let request =
             methods::broadcast_tx_async::RpcBroadcastTxAsyncRequest { signed_transaction };
-        let response = self.client.call(request).await?;
-        Ok(response)
+        self.client.call(request).await
     }
 
     /// Retrieves the status of a transaction on the NEAR blockchain, identified by `TransactionInfo`.
@@ -91,8 +87,7 @@ impl Provider for JsonRpcProvider {
     ) -> Result<FinalExecutionOutcomeView, JsonRpcError<RpcTransactionError>> {
         let request = methods::tx::RpcTransactionStatusRequest { transaction_info };
 
-        let response = self.client.call(request).await?;
-        Ok(response)
+        self.client.call(request).await
     }
 
     /// Fetches details of a specific chunk from the NEAR blockchain, identified by `ChunkReference`.
@@ -102,8 +97,7 @@ impl Provider for JsonRpcProvider {
     ) -> Result<ChunkView, JsonRpcError<RpcChunkError>> {
         let request = methods::chunk::RpcChunkRequest { chunk_reference };
 
-        let response = self.client.call(request).await?;
-        Ok(response)
+        self.client.call(request).await
     }
 
     /// Retrieves a block from the NEAR blockchain, specified by its `BlockReference`.
@@ -113,8 +107,7 @@ impl Provider for JsonRpcProvider {
     ) -> Result<BlockView, JsonRpcError<RpcBlockError>> {
         let request = methods::block::RpcBlockRequest { block_reference };
 
-        let response = self.client.call(request).await?;
-        Ok(response)
+        self.client.call(request).await
     }
 
     /// Fetches the experimental protocol configuration for a specific block, identified by `BlockReference`.
@@ -124,8 +117,7 @@ impl Provider for JsonRpcProvider {
     ) -> Result<ProtocolConfigView, JsonRpcError<RpcProtocolConfigError>> {
         let request =
             methods::EXPERIMENTAL_protocol_config::RpcProtocolConfigRequest { block_reference };
-        let response = self.client.call(request).await?;
-        Ok(response)
+        self.client.call(request).await
     }
 
     /// Retrieves information about validators for a given epoch, specified by `EpochReference`.
@@ -135,8 +127,7 @@ impl Provider for JsonRpcProvider {
     ) -> Result<EpochValidatorInfo, JsonRpcError<RpcValidatorError>> {
         let request = methods::validators::RpcValidatorRequest { epoch_reference };
 
-        let response = self.client.call(request).await?;
-        Ok(response)
+        self.client.call(request).await
     }
 }
 

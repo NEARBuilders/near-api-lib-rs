@@ -17,16 +17,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let signer = InMemorySigner::from_secret_key(signer_account_id.clone(), signer_secret_key);
 
     // Amount to transfer to the receiver account
-    let amount: Balance = 10_000_000_000_000; // Example amount in yoctoNEAR
+    let amount: Balance = 10_000_000_000; // Example amount in yoctoNEAR
 
     let provider = Arc::new(JsonRpcProvider::new("https://rpc.testnet.near.org"));
     let signer = Arc::new(signer);
 
     let account = Account::new(signer_account_id, signer, provider);
     // Call create_account
-    let result = account
-        .send_money(receiver_account_id.clone(), amount)
-        .await;
+    let result = account.send_money(&receiver_account_id, amount).await;
 
     println!("response: {:#?}", result);
 
