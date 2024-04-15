@@ -14,6 +14,7 @@ use near_transactions::TransactionBuilder;
 use num_bigint::BigInt;
 use serde_json::Value;
 use std::sync::Arc;
+use serde::{Deserialize, Serialize};
 
 /// Represents a NEAR account, encapsulating account ID, signer, and provider for blockchain interaction.
 pub struct Account {
@@ -23,7 +24,7 @@ pub struct Account {
 }
 
 /// Represents the balance details of a NEAR account.
-#[derive(Debug, PartialEq, Clone, Default)]
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct AccountBalance {
     pub total: String,
     pub state_staked: String,
@@ -177,7 +178,7 @@ impl Account {
                 if let Some(m_names) = method_names {
                     function_call_access_key(allowance, cid, m_names)
                 } else {
-                    return Err("No method_names argument provided for function call access keys. You should atleast provie an empty vector.".into());
+                    return Err("No method_names argument provided for function call access keys. You should at-least provide an empty vector.".into());
                 }
             }
             None => full_access_key(),
@@ -408,10 +409,7 @@ pub async fn view_state(
     contract_id: AccountId,
     prefix: Option<String>,
 ) -> Result<near_primitives::views::ViewStateResult, Box<dyn std::error::Error>> {
-    let prefix_op = match prefix {
-        Some(pf) => pf,
-        None => String::from(""),
-    };
+    let prefix_op = prefix.unwrap_or("".to_string());
     let query_request = QueryRequest::ViewState {
         account_id: contract_id,
         prefix: near_primitives::types::StoreKey::from(prefix_op.into_bytes()),
