@@ -29,6 +29,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let result = account
         .function_call(&contract_id, method_name, args_json, gas, 0)
+        .await?
+        .transact()
         .await;
 
     println!("response: {:#?}", result);

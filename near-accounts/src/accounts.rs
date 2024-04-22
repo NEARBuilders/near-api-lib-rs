@@ -6,15 +6,60 @@
 use crate::access_keys::{full_access_key, function_call_access_key};
 use near_crypto::{PublicKey, Signer};
 use near_primitives::account::AccessKey;
+use near_primitives::hash::CryptoHash;
+use near_primitives::transaction::SignedTransaction;
 use near_primitives::types::{AccountId, Balance, BlockReference, Finality, Gas};
-use near_primitives::views::{FinalExecutionOutcomeView, QueryRequest};
+use near_primitives::views::{FinalExecutionOutcomeView, QueryRequest, TxExecutionStatus};
 use near_providers::types::query::{QueryResponseKind, RpcQueryResponse};
+
+use near_providers::types::transactions::RpcTransactionResponse;
 use near_providers::Provider;
 use near_transactions::TransactionBuilder;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::ops::{Add, Mul, Sub};
 use std::sync::Arc;
+
+pub struct TransactionSender {
+    transaction: SignedTransaction,
+    provider: Arc<dyn Provider>,
+}
+
+impl TransactionSender {
+    pub fn new(transaction: SignedTransaction, provider: Arc<dyn Provider>) -> Self {
+        Self {
+            transaction,
+            provider,
+        }
+    }
+
+    //the error handling here looks very dirty to me. We should fix it asap.
+    pub async fn transact(self) -> Result<FinalExecutionOutcomeView, Box<dyn std::error::Error>> {
+        self.provider
+            .send_transaction(self.transaction)
+            .await
+            .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)
+    }
+
+    pub async fn transact_async(self) -> Result<CryptoHash, Box<dyn std::error::Error>> {
+        self.provider
+            .send_transaction_async(self.transaction)
+            .await
+            .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)
+    }
+
+    pub async fn transact_advanced(
+        self,
+        wait_until_str: String,
+    ) -> Result<RpcTransactionResponse, Box<dyn std::error::Error>> {
+        let wait_until: TxExecutionStatus =
+            serde_json::from_value(serde_json::json!(wait_until_str))?;
+        self.provider
+            .send_tx(self.transaction, wait_until)
+            .await
+            .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)
+    }
+}
 
 /// Represents a NEAR account, encapsulating account ID, signer, and provider for blockchain interaction.
 pub struct Account {
@@ -334,7 +379,7 @@ impl Account {
         args: Value,
         gas: Gas,
         deposit: Balance,
-    ) -> Result<FinalExecutionOutcomeView, Box<dyn std::error::Error>> {
+    ) -> Result<TransactionSender, Box<dyn std::error::Error>> {
         // Serialize the JSON to a Vec<u8>
         let args = serde_json::to_vec(&args)?;
 
@@ -346,11 +391,16 @@ impl Account {
             .sign_transaction(&*self.signer); // Sign the transaction
 
         // Send the transaction
-        let transaction_result = self.provider.send_transaction(signed_tx).await;
-        match transaction_result {
-            Ok(transaction_result) => Ok(transaction_result),
-            Err(err) => Err(Box::new(err)),
-        }
+        // let transaction_result = self.provider.send_transaction(signed_tx).await;
+        // match transaction_result {
+        //     Ok(transaction_result) => Ok(transaction_result),
+        //     Err(err) => Err(Box::new(err)),
+        // }
+        // match signed_tx {
+        //     Ok(signed_tx) => Ok(signed_tx),
+        //     Err(err) => Err(Box::new(err)),
+        // }
+        Ok(TransactionSender::new(signed_tx, self.provider.clone()))
     }
 
     /// Calls a view function on a contract deployed on the NEAR blockchain.
