@@ -23,7 +23,10 @@ use near_primitives::{
     hash::CryptoHash,
     transaction::SignedTransaction,
     types::{BlockReference, EpochReference, Finality},
-    views::{BlockView, ChunkView, EpochValidatorInfo, FinalExecutionOutcomeView, QueryRequest, TxExecutionStatus},
+    views::{
+        BlockView, ChunkView, EpochValidatorInfo, FinalExecutionOutcomeView, QueryRequest,
+        TxExecutionStatus,
+    },
 };
 
 /// Represents a provider that uses JSON RPC to interact with the NEAR blockchain.
@@ -85,9 +88,12 @@ impl Provider for JsonRpcProvider {
     async fn tx_status(
         &self,
         transaction_info: TransactionInfo,
-        wait_until: TxExecutionStatus
+        wait_until: TxExecutionStatus,
     ) -> Result<RpcTransactionResponse, JsonRpcError<RpcTransactionError>> {
-        let request = methods::tx::RpcTransactionStatusRequest { transaction_info, wait_until };
+        let request = methods::tx::RpcTransactionStatusRequest {
+            transaction_info,
+            wait_until,
+        };
 
         self.client.call(request).await
     }

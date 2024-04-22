@@ -23,7 +23,10 @@ use near_primitives::{
     hash::CryptoHash,
     transaction::SignedTransaction,
     types::{BlockReference, EpochReference},
-    views::{BlockView, ChunkView, EpochValidatorInfo, FinalExecutionOutcomeView, QueryRequest, TxExecutionStatus},
+    views::{
+        BlockView, ChunkView, EpochValidatorInfo, FinalExecutionOutcomeView, QueryRequest,
+        TxExecutionStatus,
+    },
 };
 
 use near_jsonrpc_client::methods::tx::RpcTransactionResponse;
