@@ -8,7 +8,6 @@ license = "MIT OR Apache-2.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-tokio = { version = "1", features = ["full"] }
 near-jsonrpc-client = "0.8.0"
 near-primitives = "0.20.1"
 near-jsonrpc-primitives = "0.20.1"
@@ -20,6 +19,6 @@ near-chain-configs = "0.20.0"
 
 [dev-dependencies]
 tokio = { version = "1", features = ["full", "test-util"] }
-env_logger = "0.10.0"
-reqwest = { version = "0.11.12", features = ["json"], default-features = false }
+env_logger = "0.11.3"
+reqwest = { version = "0.12.3", features = ["json"], default-features = false }
 
