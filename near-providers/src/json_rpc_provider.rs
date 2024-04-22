@@ -18,11 +18,12 @@ use crate::types::{
 use crate::Provider;
 use async_trait::async_trait;
 use near_chain_configs::ProtocolConfigView;
+use near_jsonrpc_client::methods::tx::RpcTransactionResponse;
 use near_primitives::{
     hash::CryptoHash,
     transaction::SignedTransaction,
     types::{BlockReference, EpochReference, Finality},
-    views::{BlockView, ChunkView, EpochValidatorInfo, FinalExecutionOutcomeView, QueryRequest},
+    views::{BlockView, ChunkView, EpochValidatorInfo, FinalExecutionOutcomeView, QueryRequest, TxExecutionStatus},
 };
 
 /// Represents a provider that uses JSON RPC to interact with the NEAR blockchain.
@@ -84,8 +85,9 @@ impl Provider for JsonRpcProvider {
     async fn tx_status(
         &self,
         transaction_info: TransactionInfo,
-    ) -> Result<FinalExecutionOutcomeView, JsonRpcError<RpcTransactionError>> {
-        let request = methods::tx::RpcTransactionStatusRequest { transaction_info };
+        wait_until: TxExecutionStatus
+    ) -> Result<RpcTransactionResponse, JsonRpcError<RpcTransactionError>> {
+        let request = methods::tx::RpcTransactionStatusRequest { transaction_info, wait_until };
 
         self.client.call(request).await
     }

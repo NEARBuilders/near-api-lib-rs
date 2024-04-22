@@ -8,5 +8,5 @@ license = "MIT OR Apache-2.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-near-primitives = "0.20.1"
-near-crypto = "0.20.1"
+near-crypto = "0.21.1"
+near-primitives = "0.21.1"
