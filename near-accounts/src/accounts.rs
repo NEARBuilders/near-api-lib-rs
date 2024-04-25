@@ -10,8 +10,8 @@ use near_primitives::hash::CryptoHash;
 use near_primitives::transaction::SignedTransaction;
 use near_primitives::types::{AccountId, Balance, BlockReference, Finality, Gas};
 use near_primitives::views::{FinalExecutionOutcomeView, QueryRequest, TxExecutionStatus};
-use near_providers::types::query::{QueryResponseKind, RpcQueryResponse};
 
+use near_providers::types::query::{QueryResponseKind, RpcQueryResponse};
 use near_providers::types::transactions::RpcTransactionResponse;
 use near_providers::Provider;
 use near_transactions::TransactionBuilder;
@@ -20,44 +20,51 @@ use serde_json::Value;
 use std::ops::{Add, Mul, Sub};
 use std::sync::Arc;
 
+#[derive(Clone)]
 pub struct TransactionSender {
-    transaction: SignedTransaction,
+    pub signed_transaction: SignedTransaction,
     provider: Arc<dyn Provider>,
 }
 
 impl TransactionSender {
-    pub fn new(transaction: SignedTransaction, provider: Arc<dyn Provider>) -> Self {
+    pub fn new(signed_transaction: SignedTransaction, provider: Arc<dyn Provider>) -> Self {
         Self {
-            transaction,
+            signed_transaction,
             provider,
         }
     }
 
     //the error handling here looks very dirty to me. We should fix it asap.
-    pub async fn transact(self) -> Result<FinalExecutionOutcomeView, Box<dyn std::error::Error>> {
+    pub async fn transact(self) -> Result<RpcTransactionResponse, Box<dyn std::error::Error>> {
         self.provider
-            .send_transaction(self.transaction)
+            .send_tx(self.signed_transaction, TxExecutionStatus::default())
             .await
             .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)
     }
 
-    pub async fn transact_async(self) -> Result<CryptoHash, Box<dyn std::error::Error>> {
+    pub async fn transact_async(
+        self,
+    ) -> Result<RpcTransactionResponse, Box<dyn std::error::Error>> {
         self.provider
-            .send_transaction_async(self.transaction)
+            .send_tx(self.signed_transaction, TxExecutionStatus::None)
             .await
             .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)
     }
 
     pub async fn transact_advanced(
         self,
-        wait_until_str: String,
+        wait_until_str: &str,
     ) -> Result<RpcTransactionResponse, Box<dyn std::error::Error>> {
         let wait_until: TxExecutionStatus =
             serde_json::from_value(serde_json::json!(wait_until_str))?;
         self.provider
-            .send_tx(self.transaction, wait_until)
+            .send_tx(self.signed_transaction, wait_until)
             .await
             .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)
+    }
+
+    pub fn get_transaction_hash(self) -> Result<CryptoHash, Box<dyn std::error::Error>> {
+        Ok(self.signed_transaction.get_hash())
     }
 }
 

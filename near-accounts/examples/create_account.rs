@@ -1,6 +1,6 @@
 use near_accounts::Account;
 use near_crypto::InMemorySigner;
-use near_primitives::types::Gas;
+use near_primitives::{types::Gas, views::FinalExecutionOutcomeViewEnum};
 use near_providers::JsonRpcProvider;
 use std::sync::Arc;
 mod utils;
@@ -43,11 +43,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .await;
 
     match result {
-        Ok(res) => {
-            println!("transaction: {:#?}", res.transaction);
-            println!("status: {:#?}", res.status);
-            println!("receipts_outcome {:#?}", res.transaction_outcome);
-        }
+        Ok(res) => match &res.final_execution_outcome {
+            Some(FinalExecutionOutcomeViewEnum::FinalExecutionOutcome(outcome)) => {
+                println!("Final Exuecution outcome: {:?}", outcome);
+                println!("Final Exuecution outcome: {:?}", outcome.transaction);
+            }
+            Some(FinalExecutionOutcomeViewEnum::FinalExecutionOutcomeWithReceipt(
+                outcome_receipt,
+            )) => {
+                println!("Final Exuecution outcome: {:?}", outcome_receipt)
+            }
+            None => println!("No Final execution outcome."),
+        },
         Err(err) => println!("Error: {:#?}", err),
     }
 
