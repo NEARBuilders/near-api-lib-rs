@@ -9,17 +9,18 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 tokio = { version = "1", features = ["full"] }
-near-jsonrpc-client = "0.8.0"
-near-primitives = "0.20.1"
-near-jsonrpc-primitives = "0.20.1"
 async-trait = "0.1.50"
 serde_json = "1.0.85"
-near-crypto = "0.20.1"
-near-chain-configs = "0.20.0"
+
+near-jsonrpc-client = {git = 'https://github.com/near/near-jsonrpc-client-rs'}
+near-crypto = "0.21.1"
+near-primitives = "0.21.1"
+near-chain-configs = "0.21.1"
+near-jsonrpc-primitives = "0.21.1"
 
 
 [dev-dependencies]
 tokio = { version = "1", features = ["full", "test-util"] }
-env_logger = "0.10.0"
-reqwest = { version = "0.11.12", features = ["json"], default-features = false }
+env_logger = "0.11.3"
+reqwest = { version = "0.12.3", features = ["json"], default-features = false }
 

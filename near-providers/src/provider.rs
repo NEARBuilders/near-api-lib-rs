@@ -23,8 +23,13 @@ use near_primitives::{
     hash::CryptoHash,
     transaction::SignedTransaction,
     types::{BlockReference, EpochReference},
-    views::{BlockView, ChunkView, EpochValidatorInfo, FinalExecutionOutcomeView, QueryRequest},
+    views::{
+        BlockView, ChunkView, EpochValidatorInfo, FinalExecutionOutcomeView, QueryRequest,
+        TxExecutionStatus,
+    },
 };
+
+use near_jsonrpc_client::methods::tx::RpcTransactionResponse;
 
 #[async_trait]
 pub trait Provider {
@@ -47,7 +52,8 @@ pub trait Provider {
     async fn tx_status(
         &self,
         transaction_info: TransactionInfo,
-    ) -> Result<FinalExecutionOutcomeView, JsonRpcError<RpcTransactionError>>;
+        wait_until: TxExecutionStatus,
+    ) -> Result<RpcTransactionResponse, JsonRpcError<RpcTransactionError>>;
 
     /// Retrieves information about a specific chunk, identified by its chunk reference.
     async fn chunk(

@@ -11,8 +11,9 @@ use near_primitives::views::{FinalExecutionOutcomeView, QueryRequest};
 use near_providers::types::query::{QueryResponseKind, RpcQueryResponse};
 use near_providers::Provider;
 use near_transactions::TransactionBuilder;
-use num_bigint::BigInt;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use std::ops::{Add, Mul, Sub};
 use std::sync::Arc;
 
 /// Represents a NEAR account, encapsulating account ID, signer, and provider for blockchain interaction.
@@ -23,7 +24,7 @@ pub struct Account {
 }
 
 /// Represents the balance details of a NEAR account.
-#[derive(Debug, PartialEq, Clone, Default)]
+#[derive(Debug, PartialEq, Clone, Default, Serialize, Deserialize)]
 pub struct AccountBalance {
     pub total: String,
     pub state_staked: String,
@@ -177,7 +178,7 @@ impl Account {
                 if let Some(m_names) = method_names {
                     function_call_access_key(allowance, cid, m_names)
                 } else {
-                    return Err("No method_names argument provided for function call access keys. You should atleast provie an empty vector.".into());
+                    return Err("No method_names argument provided for function call access keys. You should at-least provide an empty vector.".into());
                 }
             }
             None => full_access_key(),
@@ -408,10 +409,7 @@ pub async fn view_state(
     contract_id: AccountId,
     prefix: Option<String>,
 ) -> Result<near_primitives::views::ViewStateResult, Box<dyn std::error::Error>> {
-    let prefix_op = match prefix {
-        Some(pf) => pf,
-        None => String::from(""),
-    };
+    let prefix_op = prefix.unwrap_or("".to_string());
     let query_request = QueryRequest::ViewState {
         account_id: contract_id,
         prefix: near_primitives::types::StoreKey::from(prefix_op.into_bytes()),
@@ -499,18 +497,21 @@ pub async fn get_account_balance(
     let protocol_config = provider
         .experimental_protocol_config(block_reference)
         .await?;
-    let cost_per_byte = BigInt::from(protocol_config.runtime_config.storage_amount_per_byte);
+    // let cost_per_byte = BigInt::from(protocol_config.runtime_config.storage_amount_per_byte);
 
     let state = state(provider, account_id).await?;
 
-    // Assuming state.storage_usage, state.locked, and state.amount are already BigInt or can be converted to BigInt
-    let state_staked = BigInt::from(state.storage_usage) * &cost_per_byte;
-    let staked = BigInt::from(state.locked);
-    let total_balance = BigInt::from(state.amount) + &staked;
-    let available_balance = if staked > state_staked {
-        &total_balance - &staked
+    let staked = state.locked;
+    let state_staked = protocol_config
+        .runtime_config
+        .storage_amount_per_byte
+        .mul(state.storage_usage as u128);
+    let total_balance = staked.add(state.amount);
+
+    let available_balance = if staked.ge(&state_staked) {
+        total_balance.sub(staked)
     } else {
-        &total_balance - &state_staked
+        total_balance.sub(state_staked)
     };
 
     // Convert BigInt to String for the struct. Handle potential conversion errors as needed
