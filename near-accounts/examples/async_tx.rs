@@ -3,9 +3,7 @@ use near_accounts::Account;
 use near_crypto::{InMemorySigner, SecretKey};
 use near_primitives::views::TxExecutionStatus;
 use near_primitives::{types::Gas, views::FinalExecutionOutcomeViewEnum};
-use near_providers::jsonrpc_primitives::types::transactions::{
-    RpcTransactionError, TransactionInfo,
-};
+use near_providers::jsonrpc_primitives::types::transactions::TransactionInfo;
 use near_providers::JsonRpcProvider;
 use near_providers::Provider;
 use std::sync::Arc;
@@ -43,22 +41,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     //Different Wait_until values:  None, Included, ExecutedOptimistic, IncludedFinal, Executed, Final
     let result = transaction_sender.transact_advanced("NONE").await;
     let t2 = time::Instant::now();
-    // match result {
-    //     Ok(res) => match &res.final_execution_outcome {
-    //         //Final Execution outcome for finality NONE would always be empty.
-    //         Some(FinalExecutionOutcomeViewEnum::FinalExecutionOutcome(outcome)) => {
-    //             println!("Final Exuecution outcome: {:?}", outcome);
-    //             println!("Final Exuecution outcome: {:?}", outcome.transaction);
-    //         }
-    //         Some(FinalExecutionOutcomeViewEnum::FinalExecutionOutcomeWithReceipt(
-    //             outcome_receipt,
-    //         )) => {
-    //             println!("Final Exuecution outcome: {:?}", outcome_receipt)
-    //         }
-    //         None => println!("No Final execution outcome."),
-    //     },
-    //     Err(err) => println!("Error: {:#?}", err),
-    // }
+    match result {
+        Ok(res) => match &res.final_execution_outcome {
+            //Final Execution outcome for finality NONE would always be empty.
+            Some(FinalExecutionOutcomeViewEnum::FinalExecutionOutcome(outcome)) => {
+                println!("Final Exuecution outcome: {:?}", outcome);
+                println!("Final Exuecution outcome: {:?}", outcome.transaction);
+            }
+            Some(FinalExecutionOutcomeViewEnum::FinalExecutionOutcomeWithReceipt(
+                outcome_receipt,
+            )) => {
+                println!("Final Exuecution outcome_reciepts: {:?}", outcome_receipt)
+            }
+            None => println!("No Final execution outcome."),
+        },
+        Err(err) => println!("Error: {:#?}", err),
+    }
 
     //Check the status of the transaction now.
     let transaction_info = TransactionInfo::TransactionId {
@@ -83,8 +81,5 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     
     println!("Time taken for aysnc request: {:?}",t2-t1);
     println!("Time taken for status request: {:?}",t4-t3);
-
-    println!("Time taken for two requests: {:?}",(t4-t3)+(t2-t1));
-
     Ok(())
 }

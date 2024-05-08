@@ -410,7 +410,46 @@ impl Account {
         Ok(TransactionSender::new(signed_tx, self.provider.clone()))
     }
 
-    /// Calls a view function on a contract deployed on the NEAR blockchain.
+    // /// Calls a view function on a contract deployed on the NEAR blockchain.
+    // ///
+    // /// View functions are read-only and do not modify state. They're free to call.
+    // ///
+    // /// # Arguments
+    // ///
+    // /// * `contract_id` - The account ID of the contract.
+    // /// * `method_name` - The name of the view function to call.
+    // /// * `args` - The arguments to the function call, typically in the form of a serialized byte array (`FunctionArgs`).
+    // ///
+    // /// # Returns
+    // ///
+    // /// A `Result` containing the result of the function call or an error if the operation fails.
+    // pub async fn view_function(
+    //     &self,
+    //     contract_id: AccountId,
+    //     method_name: String,
+    //     args: Value,
+    // ) -> Result<near_primitives::views::CallResult, Box<dyn std::error::Error>> {
+    //     let args_vec = serde_json::to_vec(&args)?.into();
+
+    //     let query_request = QueryRequest::CallFunction {
+    //         account_id: contract_id.clone(),
+    //         method_name: method_name.clone(),
+    //         args: args_vec,
+    //     };
+
+    //     // Send the query to the NEAR blockchain
+    //     let response: RpcQueryResponse = self.provider.query(query_request).await?;
+
+    //     if let QueryResponseKind::CallResult(result) = response.kind {
+    //         Ok(result)
+    //     } else {
+    //         Err("Unexpected response kind".into())
+    //     }
+    // }
+}
+
+
+/// Calls a view function on a contract deployed on the NEAR blockchain.
     ///
     /// View functions are read-only and do not modify state. They're free to call.
     ///
@@ -424,7 +463,7 @@ impl Account {
     ///
     /// A `Result` containing the result of the function call or an error if the operation fails.
     pub async fn view_function(
-        &self,
+        provider: Arc<dyn Provider>,
         contract_id: AccountId,
         method_name: String,
         args: Value,
@@ -438,7 +477,7 @@ impl Account {
         };
 
         // Send the query to the NEAR blockchain
-        let response: RpcQueryResponse = self.provider.query(query_request).await?;
+        let response: RpcQueryResponse = provider.query(query_request).await?;
 
         if let QueryResponseKind::CallResult(result) = response.kind {
             Ok(result)
@@ -446,7 +485,6 @@ impl Account {
             Err("Unexpected response kind".into())
         }
     }
-}
 
 /// Queries the state of a contract on the NEAR blockchain using a key prefix.
 ///
