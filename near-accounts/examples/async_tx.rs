@@ -78,8 +78,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         Err(err) => println!("Error: {:#?}", err),
     }
-    
-    println!("Time taken for aysnc request: {:?}",t2-t1);
-    println!("Time taken for status request: {:?}",t4-t3);
+
+    println!("Time taken for aysnc request: {:?}", t2 - t1);
+    println!("Time taken for status request: {:?}", t4 - t3);
     Ok(())
 }

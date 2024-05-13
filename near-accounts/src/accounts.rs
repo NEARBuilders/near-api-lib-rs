@@ -20,6 +20,9 @@ use serde_json::Value;
 use std::ops::{Add, Mul, Sub};
 use std::sync::Arc;
 
+///This struct represent a Transaction Sender used specifically if you want to send transactions manually.
+/// This gives user more control over how they want to send their transactions to the NEAR network for examples, asyn, sync or advanced.
+/// It is only used by function_call method from Account for now to enable this flexibility.
 #[derive(Clone)]
 pub struct TransactionSender {
     pub signed_transaction: SignedTransaction,
@@ -27,6 +30,16 @@ pub struct TransactionSender {
 }
 
 impl TransactionSender {
+    /// Constructs a new `TransactionSender` instance.
+    ///
+    /// # Arguments
+    ///
+    /// * `signed_transaction` - Signed transaction to be sent to the NEAR chain.
+    /// * `provider` - A provider instance for interacting with the blockchain.
+    ///
+    /// # Returns
+    ///
+    /// A new `Account` instance.
     pub fn new(signed_transaction: SignedTransaction, provider: Arc<dyn Provider>) -> Self {
         Self {
             signed_transaction,
@@ -34,7 +47,7 @@ impl TransactionSender {
         }
     }
 
-    //the error handling here looks very dirty to me. We should fix it asap.
+    ///Send your transaction to the NEAR blockchain synchronously using the send_tx RPC end point and default wait_until value
     pub async fn transact(self) -> Result<RpcTransactionResponse, Box<dyn std::error::Error>> {
         self.provider
             .send_tx(self.signed_transaction, TxExecutionStatus::default())
@@ -42,6 +55,7 @@ impl TransactionSender {
             .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)
     }
 
+    ///Send your transaction to the NEAR blockchain asynchronously using the send_tx RPC end point and default wait_until None.
     pub async fn transact_async(
         self,
     ) -> Result<RpcTransactionResponse, Box<dyn std::error::Error>> {
@@ -51,6 +65,32 @@ impl TransactionSender {
             .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)
     }
 
+    ///Send your transaction to the NEAR blockchain using the send_tx RPC end point and custom wait_until value.
+    /// Different wait_until values and what they mean:
+    ///
+    /// * None
+    /// Transaction is waiting to be included into the block
+    ///
+    /// * Included
+    /// Transaction is included into the block. The block may be not finalised yet
+    ///
+    /// * ExecutedOptimistic,
+    /// Transaction is included into the block +
+    /// All the transaction receipts finished their execution.
+    /// The corresponding blocks for tx and each receipt may be not finalised yet
+    /// It is also the default value unless defined otherwise.
+    ///
+    /// * IncludedFinal
+    /// Transaction is included into finalised block
+    ///
+    /// * Executed
+    /// Transaction is included into finalised block +
+    /// All the transaction receipts finished their execution.
+    /// The corresponding blocks for each receipt may be not finalised yet
+    ///
+    /// * Final
+    /// Transaction is included into finalised block +
+    /// Execution of transaction receipts is finalised
     pub async fn transact_advanced(
         self,
         wait_until_str: &str,
@@ -63,6 +103,7 @@ impl TransactionSender {
             .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)
     }
 
+    /// Returns transaction hash for a given signed transaction
     pub fn get_transaction_hash(self) -> Result<CryptoHash, Box<dyn std::error::Error>> {
         Ok(self.signed_transaction.get_hash())
     }
@@ -378,7 +419,7 @@ impl Account {
     ///
     /// # Returns
     ///
-    /// A `Result` containing the final execution outcome of the function call or an error if the operation fails.
+    /// A `Result` containing the TransactionSender consisting of the signed transaction and the provider(sends transactions to the blockchain)) for the function call or an error if the operation fails.
     pub async fn function_call(
         &self,
         contract_id: &AccountId,
@@ -397,94 +438,47 @@ impl Account {
             .function_call(method_name, args, gas, deposit)
             .sign_transaction(&*self.signer); // Sign the transaction
 
-        // Send the transaction
-        // let transaction_result = self.provider.send_transaction(signed_tx).await;
-        // match transaction_result {
-        //     Ok(transaction_result) => Ok(transaction_result),
-        //     Err(err) => Err(Box::new(err)),
-        // }
-        // match signed_tx {
-        //     Ok(signed_tx) => Ok(signed_tx),
-        //     Err(err) => Err(Box::new(err)),
-        // }
+        // To-do. Needs error handling here.
         Ok(TransactionSender::new(signed_tx, self.provider.clone()))
     }
-
-    // /// Calls a view function on a contract deployed on the NEAR blockchain.
-    // ///
-    // /// View functions are read-only and do not modify state. They're free to call.
-    // ///
-    // /// # Arguments
-    // ///
-    // /// * `contract_id` - The account ID of the contract.
-    // /// * `method_name` - The name of the view function to call.
-    // /// * `args` - The arguments to the function call, typically in the form of a serialized byte array (`FunctionArgs`).
-    // ///
-    // /// # Returns
-    // ///
-    // /// A `Result` containing the result of the function call or an error if the operation fails.
-    // pub async fn view_function(
-    //     &self,
-    //     contract_id: AccountId,
-    //     method_name: String,
-    //     args: Value,
-    // ) -> Result<near_primitives::views::CallResult, Box<dyn std::error::Error>> {
-    //     let args_vec = serde_json::to_vec(&args)?.into();
-
-    //     let query_request = QueryRequest::CallFunction {
-    //         account_id: contract_id.clone(),
-    //         method_name: method_name.clone(),
-    //         args: args_vec,
-    //     };
-
-    //     // Send the query to the NEAR blockchain
-    //     let response: RpcQueryResponse = self.provider.query(query_request).await?;
-
-    //     if let QueryResponseKind::CallResult(result) = response.kind {
-    //         Ok(result)
-    //     } else {
-    //         Err("Unexpected response kind".into())
-    //     }
-    // }
 }
 
-
 /// Calls a view function on a contract deployed on the NEAR blockchain.
-    ///
-    /// View functions are read-only and do not modify state. They're free to call.
-    ///
-    /// # Arguments
-    ///
-    /// * `contract_id` - The account ID of the contract.
-    /// * `method_name` - The name of the view function to call.
-    /// * `args` - The arguments to the function call, typically in the form of a serialized byte array (`FunctionArgs`).
-    ///
-    /// # Returns
-    ///
-    /// A `Result` containing the result of the function call or an error if the operation fails.
-    pub async fn view_function(
-        provider: Arc<dyn Provider>,
-        contract_id: AccountId,
-        method_name: String,
-        args: Value,
-    ) -> Result<near_primitives::views::CallResult, Box<dyn std::error::Error>> {
-        let args_vec = serde_json::to_vec(&args)?.into();
+///
+/// View functions are read-only and do not modify state. They're free to call.
+///
+/// # Arguments
+///
+/// * `contract_id` - The account ID of the contract.
+/// * `method_name` - The name of the view function to call.
+/// * `args` - The arguments to the function call, typically in the form of a serialized byte array (`FunctionArgs`).
+///
+/// # Returns
+///
+/// A `Result` containing the result of the function call or an error if the operation fails.
+pub async fn view_function(
+    provider: Arc<dyn Provider>,
+    contract_id: AccountId,
+    method_name: String,
+    args: Value,
+) -> Result<near_primitives::views::CallResult, Box<dyn std::error::Error>> {
+    let args_vec = serde_json::to_vec(&args)?.into();
 
-        let query_request = QueryRequest::CallFunction {
-            account_id: contract_id.clone(),
-            method_name: method_name.clone(),
-            args: args_vec,
-        };
+    let query_request = QueryRequest::CallFunction {
+        account_id: contract_id.clone(),
+        method_name: method_name.clone(),
+        args: args_vec,
+    };
 
-        // Send the query to the NEAR blockchain
-        let response: RpcQueryResponse = provider.query(query_request).await?;
+    // Send the query to the NEAR blockchain
+    let response: RpcQueryResponse = provider.query(query_request).await?;
 
-        if let QueryResponseKind::CallResult(result) = response.kind {
-            Ok(result)
-        } else {
-            Err("Unexpected response kind".into())
-        }
+    if let QueryResponseKind::CallResult(result) = response.kind {
+        Ok(result)
+    } else {
+        Err("Unexpected response kind".into())
     }
+}
 
 /// Queries the state of a contract on the NEAR blockchain using a key prefix.
 ///

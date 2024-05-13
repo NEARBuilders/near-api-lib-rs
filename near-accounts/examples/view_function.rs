@@ -16,8 +16,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args_json = json!({"account_id": "contract.near-api-rs.testnet"});
     let method_name = "get_status".to_string();
 
-    let result = view_function(provider, contract_id, method_name, args_json)
-        .await;
+    let result = view_function(provider, contract_id, method_name, args_json).await;
 
     println!("response: {:#?}", result);
 

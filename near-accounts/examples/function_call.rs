@@ -7,7 +7,6 @@ use std::sync::Arc;
 mod utils;
 use near_primitives::types::AccountId;
 use serde_json::json;
-use tokio::time;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -28,15 +27,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let args_json = json!({"message": "working1"});
 
-    let t1 = time::Instant::now();
     let result = account
         .function_call(&contract_id, method_name, args_json, gas, 0)
         .await?
         .transact()
         .await;
-    let t2 = time::Instant::now();
     println!("response: {:#?}", result);
-    println!("Time taken: {:?}",t2-t1);
 
     Ok(())
 }

@@ -91,7 +91,7 @@ impl Provider for JsonRpcProvider {
         wait_until: TxExecutionStatus,
     ) -> Result<RpcTransactionResponse, JsonRpcError<RpcTransactionError>> {
         let request = methods::send_tx::RpcSendTransactionRequest {
-            signed_transaction: signed_transaction,
+            signed_transaction,
             wait_until: wait_until.clone(),
         };
         self.client.call(request).await
