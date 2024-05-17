@@ -35,24 +35,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         let result = account
             .function_call(&contract_id, method_name, args_json, gas, amount)
+            .await.expect("Reason")
+            .transact()
             .await;
-            //.await.expect("Reason")
-            //.transact()
-            //.await;
 
-        // match result {
-        //     Ok(res) => match &res.final_execution_outcome {
-        //         Some(FinalExecutionOutcomeViewEnum::FinalExecutionOutcome(outcome)) => {
-        //             println!("Final Execution outcome: {:?}", outcome);
-        //         },
-        //         Some(FinalExecutionOutcomeViewEnum::FinalExecutionOutcomeWithReceipt(outcome_receipt)) => {
-        //             println!("Final Execution outcome with receipt: {:?}", outcome_receipt);
-        //         },
-        //         None => println!("No Final execution outcome."),
-        //     },
-        //     Err(err) => println!("Error: {:#?}", err),
-        // }
-        println!("Result - {:#?}",result);
+        match result {
+            Ok(res) => match &res.final_execution_outcome {
+                Some(FinalExecutionOutcomeViewEnum::FinalExecutionOutcome(outcome)) => {
+                    println!("Final Execution outcome: {:#?}", outcome);
+                },
+                Some(FinalExecutionOutcomeViewEnum::FinalExecutionOutcomeWithReceipt(outcome_receipt)) => {
+                    println!("Final Execution outcome with receipt: {:#?}", outcome_receipt);
+                },
+                None => println!("No Final execution outcome."),
+            },
+            Err(err) => println!("Error: {:#?}", err),
+        }
     });
 
     // You can do more work here or wait for the handle if needed

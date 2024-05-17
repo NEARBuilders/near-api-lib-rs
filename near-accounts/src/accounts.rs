@@ -26,7 +26,7 @@ use std::sync::Arc;
 #[derive(Clone)]
 pub struct TransactionSender {
     pub signed_transaction: SignedTransaction,
-    provider: Arc<dyn Provider>,
+    provider: Arc<dyn Provider + Send + Sync>,
 }
 
 impl TransactionSender {
@@ -40,7 +40,7 @@ impl TransactionSender {
     /// # Returns
     ///
     /// A new `Account` instance.
-    pub fn new(signed_transaction: SignedTransaction, provider: Arc<dyn Provider>) -> Self {
+    pub fn new(signed_transaction: SignedTransaction, provider: Arc<dyn Provider + Send + Sync>) -> Self {
         Self {
             signed_transaction,
             provider,
