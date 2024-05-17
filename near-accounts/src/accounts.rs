@@ -112,8 +112,10 @@ impl TransactionSender {
 /// Represents a NEAR account, encapsulating account ID, signer, and provider for blockchain interaction.
 pub struct Account {
     pub account_id: AccountId,
-    pub signer: Arc<dyn Signer>,     // Use your Signer abstraction
-    pub provider: Arc<dyn Provider>, // Use your Provider abstraction
+    //pub signer: Arc<dyn Signer>,     // Use your Signer abstraction
+    pub signer: Arc<dyn Signer + Send + Sync>,     // Use your Signer abstraction
+    //pub provider: Arc<dyn Provider>, // Use your Provider abstraction
+    provider: Arc<dyn Provider + Send + Sync>,
 }
 
 /// Represents the balance details of a NEAR account.
@@ -139,8 +141,8 @@ impl Account {
     /// A new `Account` instance.
     pub fn new(
         account_id: AccountId,
-        signer: Arc<dyn Signer>,
-        provider: Arc<dyn Provider>,
+        signer: Arc<dyn Signer + Send + Sync>,
+        provider: Arc<dyn Provider + Send + Sync>,
     ) -> Self {
         Self {
             account_id,
