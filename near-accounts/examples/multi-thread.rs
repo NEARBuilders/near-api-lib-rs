@@ -1,5 +1,5 @@
 use near_accounts::Account;
-use near_crypto::{InMemorySigner,SecretKey};
+use near_crypto::{InMemorySigner, SecretKey};
 use near_primitives::{types::Gas, views::FinalExecutionOutcomeViewEnum};
 use near_providers::JsonRpcProvider;
 use std::sync::Arc;
@@ -18,14 +18,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let provider = Arc::new(JsonRpcProvider::new("https://rpc.testnet.near.org"));
     //let provider = JsonRpcProvider::new("https://rpc.testnet.near.org");
-    let signer = Arc::new(InMemorySigner::from_secret_key(signer_account_id.clone(), signer_secret_key));
+    let signer = Arc::new(InMemorySigner::from_secret_key(
+        signer_account_id.clone(),
+        signer_secret_key,
+    ));
     let account = Account::new(signer_account_id, signer.clone(), provider.clone());
 
     let contract_id: AccountId = "contract.near-api-rs.testnet".parse::<AccountId>()?;
 
     // This spawns a new asynchronous task to handle account creation
     let handle = tokio::spawn(async move {
-
         let method_name = "set_status".to_string();
         let args_json = json!({"message": "working1"});
 
@@ -35,7 +37,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         let result = account
             .function_call(&contract_id, method_name, args_json, gas, amount)
-            .await.expect("Reason")
+            .await
+            .expect("Reason")
             .transact()
             .await;
 
@@ -43,10 +46,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             Ok(res) => match &res.final_execution_outcome {
                 Some(FinalExecutionOutcomeViewEnum::FinalExecutionOutcome(outcome)) => {
                     println!("Final Execution outcome: {:#?}", outcome);
-                },
-                Some(FinalExecutionOutcomeViewEnum::FinalExecutionOutcomeWithReceipt(outcome_receipt)) => {
-                    println!("Final Execution outcome with receipt: {:#?}", outcome_receipt);
-                },
+                }
+                Some(FinalExecutionOutcomeViewEnum::FinalExecutionOutcomeWithReceipt(
+                    outcome_receipt,
+                )) => {
+                    println!(
+                        "Final Execution outcome with receipt: {:#?}",
+                        outcome_receipt
+                    );
+                }
                 None => println!("No Final execution outcome."),
             },
             Err(err) => println!("Error: {:#?}", err),

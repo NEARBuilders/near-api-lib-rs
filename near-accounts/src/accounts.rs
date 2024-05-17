@@ -40,7 +40,10 @@ impl TransactionSender {
     /// # Returns
     ///
     /// A new `Account` instance.
-    pub fn new(signed_transaction: SignedTransaction, provider: Arc<dyn Provider + Send + Sync>) -> Self {
+    pub fn new(
+        signed_transaction: SignedTransaction,
+        provider: Arc<dyn Provider + Send + Sync>,
+    ) -> Self {
         Self {
             signed_transaction,
             provider,
@@ -113,7 +116,7 @@ impl TransactionSender {
 pub struct Account {
     pub account_id: AccountId,
     //pub signer: Arc<dyn Signer>,     // Use your Signer abstraction
-    pub signer: Arc<dyn Signer + Send + Sync>,     // Use your Signer abstraction
+    pub signer: Arc<dyn Signer + Send + Sync>, // Use your Signer abstraction
     //pub provider: Arc<dyn Provider>, // Use your Provider abstraction
     provider: Arc<dyn Provider + Send + Sync>,
 }
