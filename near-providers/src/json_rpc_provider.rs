@@ -84,6 +84,19 @@ impl Provider for JsonRpcProvider {
         self.client.call(request).await
     }
 
+    /// Sends a signed transaction to the NEAR blockchain. With additional parameter wait_until to define transaction finality.
+    async fn send_tx(
+        &self,
+        signed_transaction: SignedTransaction,
+        wait_until: TxExecutionStatus,
+    ) -> Result<RpcTransactionResponse, JsonRpcError<RpcTransactionError>> {
+        let request = methods::send_tx::RpcSendTransactionRequest {
+            signed_transaction,
+            wait_until: wait_until.clone(),
+        };
+        self.client.call(request).await
+    }
+
     /// Retrieves the status of a transaction on the NEAR blockchain, identified by `TransactionInfo`.
     async fn tx_status(
         &self,

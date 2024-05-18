@@ -37,16 +37,26 @@ pub trait Provider {
     async fn status(&self) -> Result<RpcStatusResponse, JsonRpcError<RpcStatusError>>;
 
     /// Sends a transaction to the NEAR blockchain, waiting for its final execution outcome.
+    /// This RPC is deprecated by NEAR. Could be removed anytime from the RPC server.
     async fn send_transaction(
         &self,
         signed_transaction: SignedTransaction,
     ) -> Result<FinalExecutionOutcomeView, JsonRpcError<RpcTransactionError>>;
 
     /// Sends a transaction to the NEAR blockchain asynchronously, without waiting for its final execution outcome.
+    /// This RPC is deprecated by NEAR. Could be removed anytime from the RPC server.
     async fn send_transaction_async(
         &self,
         signed_transaction: SignedTransaction,
     ) -> Result<CryptoHash, JsonRpcError<methods::broadcast_tx_async::RpcBroadcastTxAsyncError>>;
+
+    /// New RPC method introduced for sending transactions. With new parameter wait_until for transaction finality.
+    /// TO-do Write about different value of wait_until
+    async fn send_tx(
+        &self,
+        signed_transaction: SignedTransaction,
+        wait_until: TxExecutionStatus,
+    ) -> Result<RpcTransactionResponse, JsonRpcError<RpcTransactionError>>;
 
     /// Fetches the status of a specific transaction, given its information.
     async fn tx_status(

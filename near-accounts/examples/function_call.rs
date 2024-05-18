@@ -1,5 +1,6 @@
 use near_accounts::Account;
 use near_crypto::InMemorySigner;
+use near_crypto::SecretKey;
 use near_primitives::types::Gas;
 use near_providers::JsonRpcProvider;
 use std::sync::Arc;
@@ -11,12 +12,11 @@ use serde_json::json;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
 
-    let signer_account_id: AccountId = utils::input("Enter the signer Account ID: ")?.parse()?;
-    let signer_secret_key = utils::input("Enter the signer's private key: ")?.parse()?;
+    let signer_account_id: AccountId = "near-api-rs.testnet".parse::<AccountId>()?;
+    let signer_secret_key = "ed25519:29nYmQCZMsQeYtztXZzm57ayQt2uBHXdn2SAjK4ccMGSQaNUFNJ7Aoteno81eKTex9cGBbk1FuDuqJRsdzx34xDY".parse::<SecretKey>()?;
     let contract_id: AccountId = "contract.near-api-rs.testnet".parse::<AccountId>()?;
     let signer = InMemorySigner::from_secret_key(signer_account_id.clone(), signer_secret_key);
 
-    // Amount to transfer to the new account
     let gas: Gas = 100_000_000_000_000; // Example amount in yoctoNEAR
 
     let provider = Arc::new(JsonRpcProvider::new("https://rpc.testnet.near.org"));
@@ -29,8 +29,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let result = account
         .function_call(&contract_id, method_name, args_json, gas, 0)
+        .await?
+        .transact()
         .await;
-
     println!("response: {:#?}", result);
 
     Ok(())
