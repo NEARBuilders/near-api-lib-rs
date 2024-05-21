@@ -184,11 +184,11 @@ impl Account {
         Ok(signed_tx)
     }
 
-    async fn signed_transaction(
+    async fn sign_send_transaction(
         &self,
         actions: &mut ActionBuilder,
         receiver_id: &AccountId,
-    ) -> Result<SignedTransaction, Box<dyn std::error::Error>> {
+    ) -> Result<FinalExecutionOutcomeView, Box<dyn std::error::Error>> {
         // Fetch the current nonce for the signer account and latest block hash
         let nonce = self
             .fetch_nonce(&self.account_id, &self.signer.public_key())
@@ -209,7 +209,13 @@ impl Account {
         )
         .set_action(actions.clone_builder())
         .sign_transaction(&*self.signer);
-        Ok(signed_tx)
+
+        let transaction_result = self.provider.send_transaction(signed_tx.clone()).await;
+
+        match transaction_result {
+            Ok(transaction) => Ok(transaction),
+            Err(err) => Err(Box::new(err)),
+        }
     }
 
     /// Fetches the current nonce for an account's access key.
@@ -268,19 +274,8 @@ impl Account {
             .set_create_account()
             .set_transfer(amount)
             .set_add_key(public_key.clone(), full_access_key());
-        // .clone_builder();
 
-        // let signed_tx = &self
-        //     .get_transaction_builder(new_account_id)
-        //     .await?
-        //     .set_action(actions)
-        //     .sign_transaction(&*self.signer); // Sign the transaction
-
-        let signed_tx = &self.signed_transaction(actions, new_account_id).await?;
-
-        // Send the transaction
-        let transaction_result = self.provider.send_transaction(signed_tx.clone()).await?;
-        Ok(transaction_result)
+        self.sign_send_transaction(actions, new_account_id).await
     }
 
     /// Adds a full or function call access key to an account
