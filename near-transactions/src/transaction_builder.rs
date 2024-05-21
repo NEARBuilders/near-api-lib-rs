@@ -55,6 +55,19 @@ impl TransactionBuilder {
         SignedTransaction::new(signature, self.transaction.clone())
     }
 
+    // Finalize and return the built Transaction
+    pub fn build(self) -> Transaction {
+        self.transaction
+    }
+
+    pub fn set_action(&mut self, actions: Vec<Action>) -> &mut Self {
+        self.transaction.actions = actions;
+        self
+    }
+
+    // We can remove the below function
+    // since all handling different actions
+
     /// Methods to add CreateAccount action directly to the Transaction's actions vector
     pub fn create_account(&mut self) -> &mut Self {
         self.transaction
@@ -128,10 +141,5 @@ impl TransactionBuilder {
                 beneficiary_id,
             }));
         self
-    }
-
-    // Finalize and return the built Transaction
-    pub fn build(self) -> Transaction {
-        self.transaction
     }
 }

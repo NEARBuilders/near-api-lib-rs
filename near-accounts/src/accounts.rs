@@ -14,7 +14,8 @@ use near_primitives::views::{FinalExecutionOutcomeView, QueryRequest, TxExecutio
 use near_providers::types::query::{QueryResponseKind, RpcQueryResponse};
 use near_providers::types::transactions::RpcTransactionResponse;
 use near_providers::Provider;
-use near_transactions::TransactionBuilder;
+use near_transactions::{ActionBuilder, TransactionBuilder};
+
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::ops::{Add, Mul, Sub};
@@ -183,6 +184,34 @@ impl Account {
         Ok(signed_tx)
     }
 
+    async fn signed_transaction(
+        &self,
+        actions: &mut ActionBuilder,
+        receiver_id: &AccountId,
+    ) -> Result<SignedTransaction, Box<dyn std::error::Error>> {
+        // Fetch the current nonce for the signer account and latest block hash
+        let nonce = self
+            .fetch_nonce(&self.account_id, &self.signer.public_key())
+            .await?;
+
+        //Block hash
+        let block_reference = BlockReference::Finality(Finality::Final);
+        let block = self.provider.block(block_reference).await?;
+        let block_hash = block.header.hash;
+
+        // Use TransactionBuilder to construct the transaction
+        let signed_tx = TransactionBuilder::new(
+            self.account_id.clone(),
+            self.signer.public_key(),
+            receiver_id.clone(),
+            nonce + 1,
+            block_hash,
+        )
+        .set_action(actions.clone_builder())
+        .sign_transaction(&*self.signer);
+        Ok(signed_tx)
+    }
+
     /// Fetches the current nonce for an account's access key.
     ///
     /// # Arguments
@@ -234,13 +263,20 @@ impl Account {
         amount: Balance,
     ) -> Result<FinalExecutionOutcomeView, Box<dyn std::error::Error>> {
         // Use TransactionBuilder to construct the transaction
-        let signed_tx = &self
-            .get_transaction_builder(new_account_id)
-            .await?
-            .create_account()
-            .transfer(amount)
-            .add_key(public_key, full_access_key())
-            .sign_transaction(&*self.signer); // Sign the transaction
+        let mut builder = ActionBuilder::new();
+        let actions = builder
+            .set_create_account()
+            .set_transfer(amount)
+            .set_add_key(public_key.clone(), full_access_key());
+        // .clone_builder();
+
+        // let signed_tx = &self
+        //     .get_transaction_builder(new_account_id)
+        //     .await?
+        //     .set_action(actions)
+        //     .sign_transaction(&*self.signer); // Sign the transaction
+
+        let signed_tx = &self.signed_transaction(actions, new_account_id).await?;
 
         // Send the transaction
         let transaction_result = self.provider.send_transaction(signed_tx.clone()).await?;
