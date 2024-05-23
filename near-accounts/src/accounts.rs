@@ -20,13 +20,16 @@ use serde_json::Value;
 use std::ops::{Add, Mul, Sub};
 use std::sync::Arc;
 
+type ArcProviderSendSync = Arc<dyn Provider + Send + Sync>;
+type ArcSignerSendSync = Arc<dyn Signer + Send + Sync>;
+
 ///This struct represent a Transaction Sender used specifically if you want to send transactions manually.
 /// This gives user more control over how they want to send their transactions to the NEAR network for examples, asyn, sync or advanced.
 /// It is only used by function_call method from Account for now to enable this flexibility.
 #[derive(Clone)]
 pub struct TransactionSender {
     pub signed_transaction: SignedTransaction,
-    provider: Arc<dyn Provider>,
+    provider: ArcProviderSendSync,
 }
 
 impl TransactionSender {
@@ -40,7 +43,7 @@ impl TransactionSender {
     /// # Returns
     ///
     /// A new `Account` instance.
-    pub fn new(signed_transaction: SignedTransaction, provider: Arc<dyn Provider>) -> Self {
+    pub fn new(signed_transaction: SignedTransaction, provider: ArcProviderSendSync) -> Self {
         Self {
             signed_transaction,
             provider,
@@ -112,8 +115,8 @@ impl TransactionSender {
 /// Represents a NEAR account, encapsulating account ID, signer, and provider for blockchain interaction.
 pub struct Account {
     pub account_id: AccountId,
-    pub signer: Arc<dyn Signer>,     // Use your Signer abstraction
-    pub provider: Arc<dyn Provider>, // Use your Provider abstraction
+    pub signer: ArcSignerSendSync,     // Use your Signer abstraction
+    pub provider: ArcProviderSendSync, // Use your Provider abstraction
 }
 
 /// Represents the balance details of a NEAR account.
@@ -139,8 +142,8 @@ impl Account {
     /// A new `Account` instance.
     pub fn new(
         account_id: AccountId,
-        signer: Arc<dyn Signer>,
-        provider: Arc<dyn Provider>,
+        signer: ArcSignerSendSync,
+        provider: ArcProviderSendSync,
     ) -> Self {
         Self {
             account_id,
@@ -457,7 +460,7 @@ impl Account {
 ///
 /// A `Result` containing the result of the function call or an error if the operation fails.
 pub async fn view_function(
-    provider: Arc<dyn Provider>,
+    provider: ArcProviderSendSync,
     contract_id: AccountId,
     method_name: String,
     args: Value,
@@ -494,7 +497,7 @@ pub async fn view_function(
 ///
 /// A `Result` containing the contract's state filtered by the specified prefix, or an error if the query fails.
 pub async fn view_state(
-    provider: Arc<dyn Provider>,
+    provider: ArcProviderSendSync,
     contract_id: AccountId,
     prefix: Option<String>,
 ) -> Result<near_primitives::views::ViewStateResult, Box<dyn std::error::Error>> {
@@ -526,7 +529,7 @@ pub async fn view_state(
 ///
 /// A `Result` containing a list of access keys for the specified account, or an error if the operation fails.
 pub async fn get_access_key(
-    provider: Arc<dyn Provider>,
+    provider: ArcProviderSendSync,
     account_id: AccountId,
 ) -> Result<near_primitives::views::AccessKeyList, Box<dyn std::error::Error>> {
     let query_request = QueryRequest::ViewAccessKeyList { account_id };
@@ -552,7 +555,7 @@ pub async fn get_access_key(
 ///
 /// A `Result` containing the state of the specified account, or an error if the query fails.
 pub async fn state(
-    provider: Arc<dyn Provider>,
+    provider: ArcProviderSendSync,
     account_id: AccountId,
 ) -> Result<near_primitives::views::AccountView, Box<dyn std::error::Error>> {
     let query_request = QueryRequest::ViewAccount { account_id };
@@ -578,7 +581,7 @@ pub async fn state(
 ///
 /// A `Result` containing the balance details of the account, structured as `AccountBalance`, or an error if the query fails.
 pub async fn get_account_balance(
-    provider: Arc<dyn Provider>,
+    provider: ArcProviderSendSync,
     account_id: AccountId,
 ) -> Result<AccountBalance, Box<dyn std::error::Error>> {
     // Assuming `experimental_protocol_config` and `state` are async functions you can call on the provider
