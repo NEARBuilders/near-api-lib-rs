@@ -28,4 +28,8 @@
 
 pub use crate::transaction_builder::TransactionBuilder;
 
+pub mod action_builder;
+pub mod delegate_actions;
 mod transaction_builder;
+
+pub use near_primitives::transaction::Transaction;
