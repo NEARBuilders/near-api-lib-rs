@@ -36,13 +36,13 @@ impl ActionBuilder {
     }
 
     // Methods to add various actions to the builder
-    pub fn set_create_account(&mut self) -> &mut Self {
+    pub fn create_account(&mut self) -> &mut Self {
         self.actions
             .push(Action::CreateAccount(CreateAccountAction {}));
         self
     }
 
-    pub fn set_deploy_contract(&mut self, code: &[u8]) -> &mut Self {
+    pub fn deploy_contract(&mut self, code: &[u8]) -> &mut Self {
         self.actions
             .push(Action::DeployContract(DeployContractAction {
                 code: code.to_vec(),
@@ -67,19 +67,19 @@ impl ActionBuilder {
         self
     }
 
-    pub fn set_transfer(&mut self, deposit: Balance) -> &mut Self {
+    pub fn transfer(&mut self, deposit: Balance) -> &mut Self {
         self.actions
             .push(Action::Transfer(TransferAction { deposit }));
         self
     }
 
-    pub fn set_stake(&mut self, stake: Balance, public_key: PublicKey) -> &mut Self {
+    pub fn stake(&mut self, stake: Balance, public_key: PublicKey) -> &mut Self {
         self.actions
             .push(Action::Stake(Box::new(StakeAction { stake, public_key })));
         self
     }
 
-    pub fn set_add_key(&mut self, public_key: PublicKey, access_key: AccessKey) -> &mut Self {
+    pub fn add_key(&mut self, public_key: PublicKey, access_key: AccessKey) -> &mut Self {
         self.actions.push(Action::AddKey(Box::new(AddKeyAction {
             public_key,
             access_key,
@@ -87,13 +87,13 @@ impl ActionBuilder {
         self
     }
 
-    pub fn set_delete_key(&mut self, public_key: PublicKey) -> &mut Self {
+    pub fn delete_key(&mut self, public_key: PublicKey) -> &mut Self {
         self.actions
             .push(Action::DeleteKey(Box::new(DeleteKeyAction { public_key })));
         self
     }
 
-    pub fn set_delete_account(&mut self, beneficiary_id: AccountId) -> &mut Self {
+    pub fn delete_account(&mut self, beneficiary_id: AccountId) -> &mut Self {
         self.actions
             .push(Action::DeleteAccount(DeleteAccountAction {
                 beneficiary_id,
@@ -102,7 +102,8 @@ impl ActionBuilder {
     }
 
     // Build method to finalize and retrieve the actions
-    pub fn clone_builder(&self) -> Vec<Action> {
+    // This is a clone builder
+    pub fn build(&self) -> Vec<Action> {
         self.clone().actions
     }
 }
