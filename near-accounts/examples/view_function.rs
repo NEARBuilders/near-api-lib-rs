@@ -10,12 +10,13 @@ async fn single_thread() -> Result<(), Box<dyn std::error::Error>> {
 
     let provider = Arc::new(JsonRpcProvider::new("https://rpc.testnet.near.org"));
 
-    let args_json = json!({"account_id": "contract.near-api-rs.testnet"});
+    let args_json = json!({"account_id": "near-api-rs.testnet"});
     let method_name = "get_status".to_string();
 
-    let result = view_function(provider, contract_id, method_name, args_json).await;
+    let result = view_function(provider, contract_id, method_name, args_json).await?;
 
-    println!("response: {:#?}", result);
+    println!("response single thread: {:#?}", String::from_utf8(result.result).expect("Failed to convert to String"));
+    println!("response log: {:#?}", result.logs);
 
     Ok(())
 }
