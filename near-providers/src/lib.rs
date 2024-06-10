@@ -11,6 +11,8 @@
 //! This crate is designed to be easily extendable with more providers and to offer a
 //! straightforward way to integrate NEAR blockchain functionalities into Rust applications.
 
+/// Re-export the Provider trait
+pub use crate::fast_near_http_provider::{AccessKeyInfoView, FastNearHTTPClient};
 /// Re-export the JsonRpcProvider
 pub use crate::json_rpc_provider::JsonRpcProvider;
 /// Re-export the Provider trait
@@ -25,5 +27,6 @@ pub use near_jsonrpc_primitives::types;
 pub use near_jsonrpc_client as jsonrpc_client;
 pub use near_jsonrpc_primitives as jsonrpc_primitives;
 
+mod fast_near_http_provider;
 mod json_rpc_provider;
 mod provider;
