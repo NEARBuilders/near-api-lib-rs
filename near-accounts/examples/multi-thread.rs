@@ -17,7 +17,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let signer_secret_key = "ed25519:29nYmQCZMsQeYtztXZzm57ayQt2uBHXdn2SAjK4ccMGSQaNUFNJ7Aoteno81eKTex9cGBbk1FuDuqJRsdzx34xDY".parse::<SecretKey>()?;
 
     let provider = Arc::new(JsonRpcProvider::new("https://rpc.testnet.near.org"));
-    //let provider = JsonRpcProvider::new("https://rpc.testnet.near.org");
     let signer = Arc::new(InMemorySigner::from_secret_key(
         signer_account_id.clone(),
         signer_secret_key,

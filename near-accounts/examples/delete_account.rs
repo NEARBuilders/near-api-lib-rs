@@ -1,13 +1,34 @@
 mod example_config;
+use near_accounts::Account;
+use near_crypto::{InMemorySigner, SecretKey};
+use near_providers::JsonRpcProvider;
+use std::sync::Arc;
 mod utils;
 use near_primitives::types::AccountId;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
+
+    // Get test account and rpc details.
+    let config = example_config::get_test_config();
+
+    //Create a signer
+    let signer_account_id: AccountId = config.near_account.account_id.parse().unwrap();
+    let signer_secret_key: SecretKey = config.near_account.secret_key.parse().unwrap();
+    let signer = Arc::new(InMemorySigner::from_secret_key(
+        signer_account_id.clone(),
+        signer_secret_key,
+    ));
+
+    //Creat a Provider
+    let provider = Arc::new(JsonRpcProvider::new(config.rpc_testnet_endpoint.as_str()));
+
+    //Create an Account object
+    let account = Account::new(signer_account_id, signer, provider.clone());
+
     let beneficiary_account_id: AccountId =
         utils::input("Enter the account name where you want to transfer current account balance before deleting it")?.parse()?;
-    let account = example_config::create_account();
 
     let response = account.delete_account(beneficiary_account_id.clone()).await;
 

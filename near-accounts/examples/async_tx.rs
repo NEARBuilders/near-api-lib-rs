@@ -7,6 +7,8 @@ use near_providers::JsonRpcProvider;
 use near_providers::Provider;
 use std::sync::Arc;
 mod utils;
+use near_accounts::Account;
+use near_crypto::{InMemorySigner, SecretKey};
 use near_primitives::types::AccountId;
 use serde_json::json;
 use tokio::time;
@@ -14,27 +16,40 @@ use tokio::time;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
-    let contract_id: AccountId = "contract.near-api-rs.testnet".parse::<AccountId>()?;
+    // Get test account and rpc details.
+    let config = example_config::get_test_config();
 
+    //Create a signer
+    let signer_account_id: AccountId = config.near_account.account_id.parse().unwrap();
+    let signer_secret_key: SecretKey = config.near_account.secret_key.parse().unwrap();
+    let signer = Arc::new(InMemorySigner::from_secret_key(
+        signer_account_id.clone(),
+        signer_secret_key,
+    ));
+
+    //Creat a Provider
+    let provider = Arc::new(JsonRpcProvider::new(config.rpc_testnet_endpoint.as_str()));
+
+    //Create an Account object
+    let account = Account::new(signer_account_id, signer, provider.clone());
+
+    //Create argumements for function_call
+    //Contract id, method_name, method args, gas and deposit.
+    let contract_id: AccountId = "contract.near-api-rs.testnet".parse::<AccountId>()?;
+    let method_name = "set_status".to_string();
+    let args_json = json!({"message": "working1"});
     let gas: Gas = 100_000_000_000_000; // Example amount in yoctoNEAR
 
-    let provider = Arc::new(JsonRpcProvider::new("https://rpc.testnet.near.org"));
-
-    let account = example_config::create_account();
-    let method_name = "set_status".to_string();
-
-    let args_json = json!({"message": "working1"});
-
+    //Create a Transaction Sender Object;
     let transaction_sender = account
         .function_call(&contract_id, method_name, args_json, gas, 0)
         .await?;
-
+    //Get the transaction hash to query the chain later.
     let tx_hash = transaction_sender.clone().get_transaction_hash().unwrap();
 
-    let t1 = time::Instant::now();
+    //Send the transaction
     //Different Wait_until values:  None, Included, ExecutedOptimistic, IncludedFinal, Executed, Final
     let result = transaction_sender.transact_advanced("NONE").await;
-    let t2 = time::Instant::now();
     match result {
         Ok(res) => match &res.final_execution_outcome {
             //Final Execution outcome for finality NONE would always be empty.
@@ -58,22 +73,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         sender_account_id: account.account_id,
     };
     let wait_until = TxExecutionStatus::ExecutedOptimistic;
-
-    time::sleep(time::Duration::from_secs(5)).await;
-
-    let t3 = time::Instant::now();
     let tx_status = provider.tx_status(transaction_info, wait_until).await;
-    let t4 = time::Instant::now();
 
     match tx_status {
         Ok(response) => {
-            //println!("response gotten after: {}s", delta);
             println!("response: {:#?}", response);
         }
         Err(err) => println!("Error: {:#?}", err),
     }
-
-    println!("Time taken for async request: {:?}", t2 - t1);
-    println!("Time taken for status request: {:?}", t4 - t3);
     Ok(())
 }

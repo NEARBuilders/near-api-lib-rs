@@ -29,6 +29,7 @@
 pub use crate::action_builder::ActionBuilder;
 pub use crate::delegate_action::{create_delegate_action, create_signed_delegate_action};
 pub use crate::transaction_builder::TransactionBuilder;
+pub use near_primitives::transaction;
 
 mod action_builder;
 mod delegate_action;

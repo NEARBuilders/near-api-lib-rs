@@ -7,13 +7,13 @@ use crate::access_keys::{full_access_key, function_call_access_key};
 use crate::transaction_sender::TransactionSender;
 use near_crypto::{PublicKey, Signer};
 use near_primitives::account::AccessKey;
-use near_primitives::transaction::SignedTransaction;
 use near_primitives::types::{AccountId, Balance, BlockReference, Finality, Gas};
 use near_primitives::views::{FinalExecutionOutcomeView, QueryRequest};
+use near_transactions::transaction::Transaction;
 
 use near_providers::types::query::{QueryResponseKind, RpcQueryResponse};
 use near_providers::Provider;
-use near_transactions::{ActionBuilder, TransactionBuilder};
+use near_transactions::ActionBuilder;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::ops::{Add, Mul, Sub};
@@ -62,7 +62,7 @@ impl Account {
         }
     }
 
-    /// Create a `SignedTransaction` for constructing a signed transaction.
+    /// Create a `Transaction` for constructing a signed transaction later.
     ///
     /// # Arguments
     ///
@@ -71,13 +71,14 @@ impl Account {
     ///
     /// # Returns
     ///
-    /// A result containing a `SignedTransaction` instance or an error if fetching the nonce or block hash failed.
-    async fn create_signed_transaction(
+    /// A result containing a `Transaction` instance or an error if fetching the nonce or block hash failed.
+    async fn create_transaction(
         &self,
         receiver_id: &AccountId,
-        actions: &ActionBuilder,
-    ) -> Result<SignedTransaction, Box<dyn std::error::Error>> {
+        action_builder: &ActionBuilder,
+    ) -> Result<Transaction, Box<dyn std::error::Error>> {
         // Fetch the current nonce for the signer account and latest block hash
+        // cache nonce as well, fetching it everytime is slow.
         let nonce = self
             .fetch_nonce(&self.account_id, &self.signer.public_key())
             .await?;
@@ -87,17 +88,15 @@ impl Account {
         let block = self.provider.block(block_reference).await?;
         let block_hash = block.header.hash;
 
-        // Use TransactionBuilder to construct the transaction
-        let signed_transaction: SignedTransaction = TransactionBuilder::new(
-            self.account_id.clone(),
-            self.signer.public_key(),
-            receiver_id.clone(),
-            nonce + 1,
+        let tx: Transaction = Transaction {
+            signer_id: self.account_id.clone(),
+            public_key: self.signer.public_key(),
+            nonce: nonce + 1,
+            receiver_id: receiver_id.clone(),
             block_hash,
-        )
-        .set_action(&actions.build())
-        .sign_transaction(&*self.signer);
-        Ok(signed_transaction)
+            actions: action_builder.build(),
+        };
+        Ok(tx)
     }
 
     /// Fetches the current nonce for an account's access key.
@@ -156,14 +155,19 @@ impl Account {
             .transfer(amount)
             .add_key(public_key.clone(), full_access_key());
 
-        let signed_txn = self
-            .create_signed_transaction(new_account_id, &action_builder)
+        let tx = self
+            .create_transaction(new_account_id, &action_builder)
             .await?;
-        // Use TransactionBuilder to construct the transaction
+
+        //Notice the derefencing here.
+        let signed_tx = tx.sign(&*self.signer);
 
         // Send the transaction
-        let transaction_result = self.provider.send_transaction(signed_txn.clone()).await?;
-        Ok(transaction_result)
+        let transaction_result = self.provider.send_transaction(signed_tx.clone()).await;
+        match transaction_result {
+            Ok(transaction_result) => Ok(transaction_result),
+            Err(err) => Err(Box::new(err)),
+        }
     }
 
     /// Adds a full or function call access key to an account
@@ -196,13 +200,14 @@ impl Account {
             None => full_access_key(),
         };
 
-        let signed_tx = self
-            .create_signed_transaction(
+        let tx = self
+            .create_transaction(
                 &self.account_id,
                 ActionBuilder::new().add_key(public_key, access_key),
             )
             .await?;
-        // Use TransactionBuilder to construct the transaction
+
+        let signed_tx = tx.sign(&*self.signer);
 
         // Send the transaction
         let transaction_result = self.provider.send_transaction(signed_tx).await;
@@ -225,12 +230,14 @@ impl Account {
         &self,
         public_key: PublicKey,
     ) -> Result<FinalExecutionOutcomeView, Box<dyn std::error::Error>> {
-        let signed_tx = self
-            .create_signed_transaction(
+        let tx = self
+            .create_transaction(
                 &self.account_id,
                 ActionBuilder::new().delete_key(public_key),
             )
             .await?;
+
+        let signed_tx = tx.sign(&*self.signer);
 
         // Send the transaction
         let transaction_result = self.provider.send_transaction(signed_tx).await;
@@ -253,12 +260,14 @@ impl Account {
         &self,
         byte_code: &[u8],
     ) -> Result<FinalExecutionOutcomeView, Box<dyn std::error::Error>> {
-        let signed_tx = self
-            .create_signed_transaction(
+        let tx = self
+            .create_transaction(
                 &self.account_id,
                 ActionBuilder::new().deploy_contract(byte_code),
             )
             .await?;
+
+        let signed_tx = tx.sign(&*self.signer);
 
         // Send the transaction
         let transaction_result = self.provider.send_transaction(signed_tx).await;
@@ -281,12 +290,14 @@ impl Account {
         &self,
         beneficiary_id: AccountId,
     ) -> Result<FinalExecutionOutcomeView, Box<dyn std::error::Error>> {
-        let signed_tx = self
-            .create_signed_transaction(
+        let tx = self
+            .create_transaction(
                 &self.account_id,
                 ActionBuilder::new().delete_account(beneficiary_id),
             )
             .await?;
+
+        let signed_tx = tx.sign(&*self.signer);
         // Send the transaction
         let transaction_result = self.provider.send_transaction(signed_tx).await;
         match transaction_result {
@@ -311,9 +322,11 @@ impl Account {
         receiver_id: &AccountId,
         amount: Balance,
     ) -> Result<FinalExecutionOutcomeView, Box<dyn std::error::Error>> {
-        let signed_tx = self
-            .create_signed_transaction(receiver_id, ActionBuilder::new().transfer(amount))
+        let tx = self
+            .create_transaction(receiver_id, ActionBuilder::new().transfer(amount))
             .await?;
+
+        let signed_tx = tx.sign(&*self.signer);
         // Send the transaction
         let transaction_result = self.provider.send_transaction(signed_tx).await;
         match transaction_result {
@@ -346,12 +359,14 @@ impl Account {
         // Serialize the JSON to a Vec<u8>
         let args = serde_json::to_vec(&args)?;
 
-        let signed_tx = self
-            .create_signed_transaction(
+        let tx = self
+            .create_transaction(
                 contract_id,
                 ActionBuilder::new().function_call(method_name, args, gas, deposit),
             )
             .await?;
+
+        let signed_tx = tx.sign(&*self.signer);
         // To-do. Needs error handling here.
         Ok(TransactionSender::new(signed_tx, self.provider.clone()))
     }
