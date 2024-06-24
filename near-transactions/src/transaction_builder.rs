@@ -12,14 +12,9 @@
 //! way to interact with the NEAR blockchain programmatically.
 use near_crypto::{PublicKey, Signer};
 use near_primitives::{
-    account::AccessKey,
     hash::CryptoHash,
-    transaction::{
-        Action, AddKeyAction, CreateAccountAction, DeleteAccountAction, DeleteKeyAction,
-        DeployContractAction, FunctionCallAction, SignedTransaction, StakeAction, Transaction,
-        TransferAction,
-    },
-    types::{AccountId, Balance, Gas, Nonce},
+    transaction::{Action, SignedTransaction, Transaction},
+    types::{AccountId, Nonce},
 };
 
 // TransactionBuilder struct
@@ -55,78 +50,8 @@ impl TransactionBuilder {
         SignedTransaction::new(signature, self.transaction.clone())
     }
 
-    /// Methods to add CreateAccount action directly to the Transaction's actions vector
-    pub fn create_account(&mut self) -> &mut Self {
-        self.transaction
-            .actions
-            .push(Action::CreateAccount(CreateAccountAction {}));
-        self
-    }
-
-    /// Method to add a DeployContract action
-    pub fn deploy_contract(&mut self, code: &[u8]) -> &mut Self {
-        self.transaction
-            .actions
-            .push(Action::DeployContract(DeployContractAction {
-                code: code.to_vec(),
-            }));
-        self
-    }
-
-    pub fn function_call(
-        &mut self,
-        method_name: String,
-        args: Vec<u8>,
-        gas: Gas,
-        deposit: Balance,
-    ) -> &mut Self {
-        self.transaction
-            .actions
-            .push(Action::FunctionCall(Box::new(FunctionCallAction {
-                method_name,
-                args,
-                gas,
-                deposit,
-            })));
-        self
-    }
-
-    pub fn transfer(&mut self, deposit: Balance) -> &mut Self {
-        self.transaction
-            .actions
-            .push(Action::Transfer(TransferAction { deposit }));
-        self
-    }
-
-    pub fn stake(&mut self, stake: Balance, public_key: PublicKey) -> &mut Self {
-        self.transaction
-            .actions
-            .push(Action::Stake(Box::new(StakeAction { stake, public_key })));
-        self
-    }
-    pub fn add_key(&mut self, public_key: PublicKey, access_key: AccessKey) -> &mut Self {
-        self.transaction
-            .actions
-            .push(Action::AddKey(Box::new(AddKeyAction {
-                public_key,
-                access_key,
-            })));
-        self
-    }
-
-    pub fn delete_key(&mut self, public_key: PublicKey) -> &mut Self {
-        self.transaction
-            .actions
-            .push(Action::DeleteKey(Box::new(DeleteKeyAction { public_key })));
-        self
-    }
-
-    pub fn delete_account(&mut self, beneficiary_id: AccountId) -> &mut Self {
-        self.transaction
-            .actions
-            .push(Action::DeleteAccount(DeleteAccountAction {
-                beneficiary_id,
-            }));
+    pub fn set_action(&mut self, actions: &[Action]) -> &mut Self {
+        self.transaction.actions = actions.to_owned();
         self
     }
 

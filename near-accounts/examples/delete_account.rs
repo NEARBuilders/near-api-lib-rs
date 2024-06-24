@@ -1,5 +1,6 @@
+mod example_config;
 use near_accounts::Account;
-use near_crypto::InMemorySigner;
+use near_crypto::{InMemorySigner, SecretKey};
 use near_providers::JsonRpcProvider;
 use std::sync::Arc;
 mod utils;
@@ -9,18 +10,27 @@ use near_primitives::types::AccountId;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
 
-    let signer_account_id: AccountId = utils::input("Enter the signer Account ID: ")?.parse()?;
-    let signer_secret_key = utils::input("Enter the signer's private key: ")?.parse()?;
-    let user_account_id: AccountId =
-        utils::input("Enter the account name which need to be deleted ")?.parse()?;
-    let signer = InMemorySigner::from_secret_key(signer_account_id.clone(), signer_secret_key);
+    // Get test account and rpc details.
+    let config = example_config::get_test_config();
 
-    let provider = Arc::new(JsonRpcProvider::new("https://rpc.testnet.near.org"));
-    let signer = Arc::new(signer);
+    //Create a signer
+    let signer_account_id: AccountId = config.near_account.account_id.parse().unwrap();
+    let signer_secret_key: SecretKey = config.near_account.secret_key.parse().unwrap();
+    let signer = Arc::new(InMemorySigner::from_secret_key(
+        signer_account_id.clone(),
+        signer_secret_key,
+    ));
 
-    let account = Account::new(signer_account_id, signer, provider);
+    //Creat a Provider
+    let provider = Arc::new(JsonRpcProvider::new(config.rpc_testnet_endpoint.as_str()));
 
-    let response = account.delete_account(user_account_id.clone()).await;
+    //Create an Account object
+    let account = Account::new(signer_account_id, signer, provider.clone());
+
+    let beneficiary_account_id: AccountId =
+        utils::input("Enter the account name where you want to transfer current account balance before deleting it")?.parse()?;
+
+    let response = account.delete_account(beneficiary_account_id.clone()).await;
 
     match response {
         Ok(res) => {

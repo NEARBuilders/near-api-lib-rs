@@ -1,5 +1,6 @@
+mod example_config;
 use near_accounts::Account;
-use near_crypto::InMemorySigner;
+use near_crypto::{InMemorySigner, SecretKey};
 use near_primitives::types::Balance;
 use near_providers::JsonRpcProvider;
 use std::sync::Arc;
@@ -7,17 +8,27 @@ mod utils;
 use near_primitives::types::AccountId;
 
 async fn add_full_access() -> Result<(), Box<dyn std::error::Error>> {
-    let signer_account_id: AccountId = utils::input("Enter the signer Account ID: ")?.parse()?;
-    let signer_secret_key = utils::input("Enter the signer's private key: ")?.parse()?;
-    let signer = InMemorySigner::from_secret_key(signer_account_id.clone(), signer_secret_key);
+    // Get test account and rpc details.
+    let config = example_config::get_test_config();
 
-    let new_secret_key = near_crypto::SecretKey::from_random(near_crypto::KeyType::ED25519);
+    //Create a signer
+    let signer_account_id: AccountId = config.near_account.account_id.parse().unwrap();
+    let signer_secret_key: SecretKey = config.near_account.secret_key.parse().unwrap();
+    let signer = Arc::new(InMemorySigner::from_secret_key(
+        signer_account_id.clone(),
+        signer_secret_key,
+    ));
 
-    let provider = Arc::new(JsonRpcProvider::new("https://rpc.testnet.near.org"));
-    let signer = Arc::new(signer);
+    //Creat a Provider
+    let provider = Arc::new(JsonRpcProvider::new(config.rpc_testnet_endpoint.as_str()));
 
+    //Create an Account object
     let account = Account::new(signer_account_id, signer, provider);
 
+    //Generate a secret Key for new access key
+    let new_secret_key = near_crypto::SecretKey::from_random(near_crypto::KeyType::ED25519);
+
+    //Call add_key function on an Account
     let result = account
         .add_key(new_secret_key.public_key(), None, None, None)
         .await;
@@ -33,16 +44,25 @@ async fn add_full_access() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 async fn add_function_call_key() -> Result<(), Box<dyn std::error::Error>> {
-    let signer_account_id: AccountId = utils::input("Enter the signer Account ID: ")?.parse()?;
-    let signer_secret_key = utils::input("Enter the signer's private key: ")?.parse()?;
-    let signer = InMemorySigner::from_secret_key(signer_account_id.clone(), signer_secret_key);
+    // Get test account and rpc details.
+    let config = example_config::get_test_config();
 
-    let new_secret_key = near_crypto::SecretKey::from_random(near_crypto::KeyType::ED25519);
+    //Create a signer
+    let signer_account_id: AccountId = config.near_account.account_id.parse().unwrap();
+    let signer_secret_key: SecretKey = config.near_account.secret_key.parse().unwrap();
+    let signer = Arc::new(InMemorySigner::from_secret_key(
+        signer_account_id.clone(),
+        signer_secret_key,
+    ));
 
-    let provider = Arc::new(JsonRpcProvider::new("https://rpc.testnet.near.org"));
-    let signer = Arc::new(signer);
+    //Creat a Provider
+    let provider = Arc::new(JsonRpcProvider::new(config.rpc_testnet_endpoint.as_str()));
 
+    //Create an Account object
     let account = Account::new(signer_account_id, signer, provider);
+
+    // Create a secret key for the new function call access key
+    let new_secret_key = near_crypto::SecretKey::from_random(near_crypto::KeyType::ED25519);
 
     let allowance: Balance = 1_000_000_000_000_000_000_000_000; // Example amount in yoctoNEAR
     let contract_id = "contract.near-api-rs.testnet".to_string();
