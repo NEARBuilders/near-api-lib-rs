@@ -26,6 +26,9 @@
 //! This crate aims to simplify transaction creation and management, making it more accessible for developers to
 //! interact with the NEAR blockchain programmatically.
 
+pub use crate::action_builder::ActionBuilder;
 pub use crate::transaction_builder::TransactionBuilder;
+pub use near_primitives::transaction;
 
+mod action_builder;
 mod transaction_builder;
