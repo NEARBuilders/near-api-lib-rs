@@ -1,6 +1,5 @@
 //! This example uses the transact_advance method to send  transaction and check its status
-use near_accounts::Account;
-use near_crypto::{InMemorySigner, SecretKey};
+mod example_config;
 use near_primitives::views::TxExecutionStatus;
 use near_primitives::{types::Gas, views::FinalExecutionOutcomeViewEnum};
 use near_providers::jsonrpc_primitives::types::transactions::TransactionInfo;
@@ -15,18 +14,13 @@ use tokio::time;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
-
-    let signer_account_id: AccountId = "near-api-rs.testnet".parse::<AccountId>()?;
-    let signer_secret_key = "ed25519:29nYmQCZMsQeYtztXZzm57ayQt2uBHXdn2SAjK4ccMGSQaNUFNJ7Aoteno81eKTex9cGBbk1FuDuqJRsdzx34xDY".parse::<SecretKey>()?;
     let contract_id: AccountId = "contract.near-api-rs.testnet".parse::<AccountId>()?;
-    let signer = InMemorySigner::from_secret_key(signer_account_id.clone(), signer_secret_key);
 
     let gas: Gas = 100_000_000_000_000; // Example amount in yoctoNEAR
 
     let provider = Arc::new(JsonRpcProvider::new("https://rpc.testnet.near.org"));
-    let signer = Arc::new(signer);
 
-    let account = Account::new(signer_account_id, signer, provider.clone());
+    let account = example_config::create_account();
     let method_name = "set_status".to_string();
 
     let args_json = json!({"message": "working1"});
@@ -45,13 +39,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Ok(res) => match &res.final_execution_outcome {
             //Final Execution outcome for finality NONE would always be empty.
             Some(FinalExecutionOutcomeViewEnum::FinalExecutionOutcome(outcome)) => {
-                println!("Final Exuecution outcome: {:?}", outcome);
-                println!("Final Exuecution outcome: {:?}", outcome.transaction);
+                println!("Final Execution outcome: {:?}", outcome);
+                println!("Final Execution outcome: {:?}", outcome.transaction);
             }
             Some(FinalExecutionOutcomeViewEnum::FinalExecutionOutcomeWithReceipt(
                 outcome_receipt,
             )) => {
-                println!("Final Exuecution outcome_reciepts: {:?}", outcome_receipt)
+                println!("Final Execution outcome_receipts: {:?}", outcome_receipt)
             }
             None => println!("No Final execution outcome."),
         },
@@ -79,7 +73,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Err(err) => println!("Error: {:#?}", err),
     }
 
-    println!("Time taken for aysnc request: {:?}", t2 - t1);
+    println!("Time taken for async request: {:?}", t2 - t1);
     println!("Time taken for status request: {:?}", t4 - t3);
     Ok(())
 }
