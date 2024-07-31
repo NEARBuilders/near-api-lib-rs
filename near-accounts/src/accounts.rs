@@ -78,9 +78,7 @@ impl Account {
         actions: &ActionBuilder,
     ) -> Result<SignedTransaction, Box<dyn std::error::Error>> {
         // Fetch the current nonce for the signer account and latest block hash
-        let nonce = self
-            .fetch_nonce()
-            .await?;
+        let nonce = self.fetch_nonce().await?;
 
         //Block hash
         let block_reference = BlockReference::Finality(Finality::Final);
@@ -110,12 +108,10 @@ impl Account {
     /// # Returns
     ///
     /// A result containing the nonce or an error if the query failed.
-    pub async fn fetch_nonce(
-        &self
-    ) -> Result<u64, Box<dyn std::error::Error>> {
+    pub async fn fetch_nonce(&self) -> Result<u64, Box<dyn std::error::Error>> {
         let query_request = QueryRequest::ViewAccessKey {
             account_id: self.account_id.clone(),
-            public_key: self.signer.public_key()
+            public_key: self.signer.public_key(),
         };
 
         // Send the query to the NEAR blockchain
