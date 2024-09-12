@@ -17,7 +17,10 @@ near-crypto = "0.21.1"
 near-primitives = "0.21.1"
 near-chain-configs = "0.21.1"
 near-jsonrpc-primitives = "0.21.1"
-
+reqwest = "0.12.3"
+serde = "1.0.197"
+serde_with = "3.8.1"
+url = "2.2" 
 
 [dev-dependencies]
 tokio = { version = "1", features = ["full", "test-util"] }
