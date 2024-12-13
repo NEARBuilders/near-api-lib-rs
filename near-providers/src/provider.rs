@@ -4,10 +4,6 @@
 //! The `Provider` trait is designed to be implemented by specific providers, with a JSON RPC provider currently implemented,
 //! allowing users to easily connect to and interact with the NEAR chain.
 
-use crate::jsonrpc_client::{
-    errors::JsonRpcError,
-    methods::{self, status::RpcStatusResponse},
-};
 use crate::types::{
     blocks::RpcBlockError,
     chunks::{ChunkReference, RpcChunkError},
@@ -16,6 +12,13 @@ use crate::types::{
     status::RpcStatusError,
     transactions::{RpcTransactionError, TransactionInfo},
     validator::RpcValidatorError,
+};
+use crate::{
+    error::ProviderError,
+    jsonrpc_client::{
+        errors::JsonRpcError,
+        methods::{self, status::RpcStatusResponse},
+    },
 };
 use async_trait::async_trait;
 use near_chain_configs::ProtocolConfigView;
@@ -56,7 +59,7 @@ pub trait Provider {
         &self,
         signed_transaction: SignedTransaction,
         wait_until: TxExecutionStatus,
-    ) -> Result<RpcTransactionResponse, JsonRpcError<RpcTransactionError>>;
+    ) -> Result<RpcTransactionResponse, ProviderError>;
 
     /// Fetches the status of a specific transaction, given its information.
     async fn tx_status(

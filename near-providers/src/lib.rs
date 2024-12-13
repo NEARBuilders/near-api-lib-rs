@@ -25,5 +25,6 @@ pub use near_jsonrpc_primitives::types;
 pub use near_jsonrpc_client as jsonrpc_client;
 pub use near_jsonrpc_primitives as jsonrpc_primitives;
 
+mod error;
 mod json_rpc_provider;
 mod provider;

@@ -1,11 +1,6 @@
 //! The `JsonRpcProvider` module offers a concrete implementation of the `Provider` trait, utilizing JSON RPC to communicate with the NEAR blockchain.
 //! This provider enables applications to query blockchain status, submit transactions, and fetch various blockchain data in an asynchronous manner.
 
-use crate::jsonrpc_client::{
-    errors::JsonRpcError,
-    methods::{self, status::RpcStatusResponse},
-    JsonRpcClient,
-};
 use crate::types::{
     blocks::RpcBlockError,
     chunks::{ChunkReference, RpcChunkError},
@@ -16,6 +11,14 @@ use crate::types::{
     validator::RpcValidatorError,
 };
 use crate::Provider;
+use crate::{
+    error::ProviderError,
+    jsonrpc_client::{
+        errors::JsonRpcError,
+        methods::{self, status::RpcStatusResponse},
+        JsonRpcClient,
+    },
+};
 use async_trait::async_trait;
 use near_chain_configs::ProtocolConfigView;
 use near_jsonrpc_client::methods::tx::RpcTransactionResponse;
@@ -56,10 +59,13 @@ impl Provider for JsonRpcProvider {
         &self,
         request: QueryRequest,
     ) -> Result<RpcQueryResponse, JsonRpcError<RpcQueryError>> {
+        // example, test the request here and throw an error if it is wrong.
+        // Or maybe just pass on what internal method returns
         let query_request = RpcQueryRequest {
             block_reference: BlockReference::Finality(Finality::Final),
             request,
         };
+        //do something similar here as well.
         self.client.call(query_request).await
     }
 
@@ -89,12 +95,15 @@ impl Provider for JsonRpcProvider {
         &self,
         signed_transaction: SignedTransaction,
         wait_until: TxExecutionStatus,
-    ) -> Result<RpcTransactionResponse, JsonRpcError<RpcTransactionError>> {
+    ) -> Result<RpcTransactionResponse, ProviderError> {
         let request = methods::send_tx::RpcSendTransactionRequest {
             signed_transaction,
             wait_until: wait_until.clone(),
         };
-        self.client.call(request).await
+        self.client
+            .call(request)
+            .await
+            .map_err(|e| ProviderError::JsonRpcError(e))
     }
 
     /// Retrieves the status of a transaction on the NEAR blockchain, identified by `TransactionInfo`.
