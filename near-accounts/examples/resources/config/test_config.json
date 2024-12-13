@@ -1,0 +1,13 @@
+{
+    "near_account": {
+        "account_id": "near-api-rs-1.testnet",
+        "secret_key": "ed25519:3pYeqbRyzJ3rKrdXszMPNQosw7yGZguTSsQQ8Vzc4sEHSo1cpdwxWxe5SkqNDNgX6SfWtqu8YaYtfXNMWhFPZRsA",
+        "public_key": "ed25519:7ceeaCPaQPCw28GLFZPW76MmyzRgW6Y6V1Ymquok7P4x"
+    },
+    "rpc_testnet_endpoint": "https://rpc.testnet.near.org",
+    "contract_account": {
+        "account_id": "contract.near-api-rs.testnet",
+        "secret_key": "ed25519:2ytXTGiGkMfpdW1JujZNebTCKRFQAFqq89fbkq9akBXy8kqqfhTqUCzmDexeNrCD1sjijMATdPWKzyCj9XnteFgN",
+        "public_key": "ed25519:4mKgZ8e9PgSJvrVtJ4omkgmPR7ssgpCPGc2N5AGWkhfQ"
+    }
+}
